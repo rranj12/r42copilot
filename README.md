@@ -1,73 +1,177 @@
-# Welcome to your Lovable project
+# R42 Longevity Navigator
 
-## Project info
+A comprehensive React-based application for personalized longevity health tracking and biomarker analysis, built for the R42 Institute.
 
-**URL**: https://lovable.dev/projects/a0da6e16-2e86-4b8c-a35f-6888939e12b4
+## 🚀 Features
 
-## How can I edit this code?
+### Core Functionality
+- **Personalized Onboarding**: Multi-step profile setup with health goals and biomarker integration
+- **Dashboard Analytics**: Comprehensive health metrics and progress tracking
+- **Biomarker Integration**: Support for multiple diagnostic providers (ExSeed, GenomeLink, NeuroAge, Iollo)
+- **Apple Health Integration**: Seamless health data synchronization
+- **PDF Report Processing**: Upload and analyze biomarker reports with data visualization
 
-There are several ways of editing your application.
+### Data Visualization
+- **NeuroAge Reports**: Cognitive health analysis with brain age assessment
+- **Iollo Reports**: Metabolic health analysis with inflammation and oxidative stress markers
+- **Interactive Charts**: Bar charts, doughnut charts, and trend analysis
+- **Real-time Insights**: Personalized health recommendations and insights
 
-**Use Lovable**
+### Wellness Features
+- **Retreat Planning**: 3-day longevity retreat at Ritz-Carlton, Half Moon Bay
+- **Wellness Hub**: Journal, Mediterranean recipes, and community forum
+- **R42 Center of Excellence**: Clinical trials, webinars, research papers, and portfolio companies
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a0da6e16-2e86-4b8c-a35f-6888939e12b4) and start prompting.
+## 🛠️ Technology Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: Shadcn UI
+- **Charts**: Chart.js with React Chart.js 2
+- **Icons**: Lucide React
+- **State Management**: React hooks with localStorage persistence
 
-**Use your preferred IDE**
+## 📦 Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/rranj12/r42copilot.git
+   cd r42copilot
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-Follow these steps:
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+4. **Open your browser** and navigate to `http://localhost:8080`
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 🏗️ Project Structure
 
-# Step 3: Install the necessary dependencies.
-npm i
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/            # Shadcn UI components
+│   ├── DashboardLayout.tsx
+│   └── r42-logo.tsx
+├── pages/             # Application pages
+│   ├── Dashboard.tsx
+│   ├── Index.tsx
+│   ├── Onboarding.tsx
+│   ├── NeuroAge.tsx
+│   ├── Iollo.tsx
+│   ├── Retreat.tsx
+│   ├── WellnessHub.tsx
+│   └── R42CoE.tsx
+├── lib/               # Utility functions
+│   ├── data-visualization.ts
+│   ├── user-data.ts
+│   └── utils.ts
+└── hooks/             # Custom React hooks
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## 🔧 Key Features
+
+### Onboarding Flow
+- **Step 1**: Personal information and health goals
+- **Step 2**: Biomarker data integration (ExSeed, GenomeLink, NeuroAge, Iollo)
+- **Step 3**: Apple Health integration
+- **Step 4**: Research consent and completion
+
+### Biomarker Analysis
+- **NeuroAge**: Cognitive health and brain age assessment
+- **Iollo**: Metabolic health, inflammation, oxidative stress, and mitochondrial function
+- **PDF Upload**: Process and visualize biomarker reports
+- **Data Visualization**: Interactive charts and trend analysis
+
+### Dashboard Features
+- **Overview**: Quick stats and navigation
+- **Biomarkers**: Status tracking for all diagnostic providers
+- **Insights**: Personalized health recommendations
+- **Progress**: Health goal tracking and achievements
+
+### Additional Pages
+- **Retreat**: 3-day longevity retreat planning with speaker profiles
+- **Wellness Hub**: Journal, recipes, and community features
+- **R42 CoE**: Research papers, clinical trials, and portfolio companies
+
+## 🎨 UI/UX Features
+
+- **Responsive Design**: Mobile-first approach
+- **Modern UI**: Clean, professional interface with R42 branding
+- **Accessibility**: WCAG compliant components
+- **Dark/Light Mode**: Theme support (configurable)
+- **Loading States**: Smooth user experience with loading indicators
+
+## 📊 Data Visualization
+
+### NeuroAge Reports
+- Cognitive performance metrics
+- Brain age assessment
+- Neural efficiency analysis
+- Trend tracking over time
+
+### Iollo Reports
+- Metabolic health markers
+- Inflammation analysis
+- Oxidative stress assessment
+- Mitochondrial function metrics
+
+## 🔐 Security & Privacy
+
+- **Local Storage**: User data persisted locally
+- **No External APIs**: All data processing done client-side
+- **PDF Processing**: Simulated data extraction (production-ready backend needed)
+
+## 🚀 Deployment
+
+### Development
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Production Build
+```bash
+npm run build
+npm run preview
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Environment Variables
+Create a `.env` file for production configuration:
+```env
+VITE_APP_TITLE=R42 Longevity Navigator
+VITE_APP_VERSION=1.0.0
+```
 
-**Use GitHub Codespaces**
+## 🤝 Contributing
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## What technologies are used for this project?
+## 📝 License
 
-This project is built with:
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🙏 Acknowledgments
 
-## How can I deploy this project?
+- **R42 Institute**: For the vision and requirements
+- **Shadcn UI**: For the beautiful component library
+- **Chart.js**: For the data visualization capabilities
+- **Vite**: For the fast development experience
 
-Simply open [Lovable](https://lovable.dev/projects/a0da6e16-2e86-4b8c-a35f-6888939e12b4) and click on Share -> Publish.
+## 📞 Support
 
-## Can I connect a custom domain to my Lovable project?
+For support, email support@r42institute.com or create an issue in this repository.
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+**Built with ❤️ for the R42 Institute**
