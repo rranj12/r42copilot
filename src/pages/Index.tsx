@@ -16,11 +16,16 @@ const Index = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <R42Logo size="lg" />
-              <div>
-                <h1 className="text-xl font-bold text-slate-800">R42 Copilot</h1>
-                <p className="text-xs text-slate-600">Personalized Longevity Platform</p>
-              </div>
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+              >
+                <R42Logo size="lg" />
+                <div>
+                  <h1 className="text-xl font-bold text-slate-800">R42 Copilot</h1>
+                  <p className="text-xs text-slate-600">Personalized Longevity Platform</p>
+                </div>
+              </button>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" className="text-slate-700 hover:bg-white/40" onClick={() => navigate('/wellness-hub')}>
@@ -43,39 +48,6 @@ const Index = () => {
           </div>
         </div>
       </header>
-
-      {/* Hero Section */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto text-center max-w-4xl">
-          <div className="mb-8">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/40 backdrop-blur-sm border border-white/30 text-sm font-medium text-slate-700 mb-6">
-              <Shield className="w-4 h-4 mr-2 text-blue-600" />
-              Science-Backed • AI-Powered • Personalized
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-800 mb-6 leading-tight">
-              Your Intelligent
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent block">
-                Longevity Navigator
-              </span>
-            </h1>
-            <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-              Transform your biomarker data into personalized lifestyle, diet, and supplement recommendations. 
-              Optimize your healthspan with science-based insights from leading diagnostics platforms.
-            </p>
-          </div>
-          
-          <div className="flex justify-center mb-12">
-            <Button 
-              size="lg"
-              onClick={() => navigate('/onboarding')}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 text-lg"
-            >
-              Start Your Journey
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section className="py-20 px-6 bg-white/30 backdrop-blur-sm">
@@ -224,26 +196,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto text-center max-w-3xl">
-          <h2 className="text-4xl font-bold text-slate-800 mb-6">
-            Ready to Optimize Your Healthspan?
-          </h2>
-          <p className="text-xl text-slate-600 mb-8">
-            Join thousands of users who are already using R42 Copilot to make 
-            data-driven decisions about their longevity journey.
-          </p>
-          <Button 
-            size="lg"
-            onClick={() => navigate('/onboarding')}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 text-lg"
-          >
-            Start Your Free Analysis
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
-        </div>
-      </section>
+
 
       {/* Footer */}
       <footer className="border-t border-white/20 bg-white/20 backdrop-blur-sm py-12 px-6">
