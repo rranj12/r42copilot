@@ -156,36 +156,47 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     reader.onload = async (event) => {
       try {
         const arrayBuffer = event.target?.result as ArrayBuffer;
-        
-        // For now, let's use a simple text extraction approach
-        // This will work with most PDFs that have text content
         const uint8Array = new Uint8Array(arrayBuffer);
         
-        // Simple text extraction - look for readable text in the PDF
+        // Smart text extraction with length limits
         let text = '';
+        let charCount = 0;
+        const maxChars = 50000; // Limit to ~12k tokens (well under OpenAI's limit)
         
-        // Convert bytes to string and look for readable text
-        for (let i = 0; i < uint8Array.length; i++) {
+        // Look for readable text patterns that are likely to be actual content
+        for (let i = 0; i < uint8Array.length && charCount < maxChars; i++) {
           if (uint8Array[i] >= 32 && uint8Array[i] <= 126) { // Printable ASCII
             text += String.fromCharCode(uint8Array[i]);
+            charCount++;
           }
         }
         
-        // Clean up the text - remove excessive whitespace and non-readable characters
+        // Clean up the text
         text = text
           .replace(/\s+/g, ' ') // Replace multiple spaces with single space
           .replace(/[^\x20-\x7E]/g, '') // Remove non-printable characters
           .trim();
         
-        if (!text || text.length < 100) {
-          // If simple extraction didn't work well, provide a fallback
-          text = `PDF content extracted from ${file.name}. 
+        // If we have too much text, truncate intelligently
+        if (text.length > maxChars) {
+          // Try to find a good breaking point (end of sentence or word)
+          const truncated = text.substring(0, maxChars);
+          const lastPeriod = truncated.lastIndexOf('.');
+          const lastSpace = truncated.lastIndexOf(' ');
           
-This PDF contains health and biomarker data that will be analyzed by AI. 
-The content includes test results, reference ranges, and clinical notes.
-
-Note: This is a simplified text extraction. For more accurate results, 
-consider using a dedicated PDF parsing service.`;
+          if (lastPeriod > maxChars * 0.8) {
+            text = truncated.substring(0, lastPeriod + 1);
+          } else if (lastSpace > maxChars * 0.8) {
+            text = truncated.substring(0, lastSpace);
+          } else {
+            text = truncated;
+          }
+        }
+        
+        console.log(`Extracted ${text.length} characters from PDF`);
+        
+        if (!text || text.length < 100) {
+          text = `PDF content extracted from ${file.name}. This PDF contains health and biomarker data that will be analyzed by AI.`;
         }
         
         resolve(text);
