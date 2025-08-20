@@ -80,9 +80,10 @@ Analysis Requirements:
 6. Use medical terminology appropriately but explain in accessible language
 7. Base ALL insights on the actual PDF content provided, not generic information
 
-IMPORTANT: Extract real values, metrics, and findings from the provided PDF text. Do not generate placeholder or generic information.
-
-Output Format: Return a valid JSON object with the exact structure specified in the interface.`
+IMPORTANT: 
+- Extract real values, metrics, and findings from the provided PDF text. Do not generate placeholder or generic information.
+- Return ONLY the raw JSON object, no markdown formatting, no code blocks, no additional text.
+- Ensure the JSON is valid and properly formatted.`
           },
           {
             role: 'user',
@@ -133,7 +134,23 @@ Return only the JSON response, no additional text.`
     
     try {
       console.log('Attempting to parse AI response as JSON...');
-      const parsed = JSON.parse(aiResponse);
+      
+      // Clean the response - remove markdown code blocks if present
+      let cleanResponse = aiResponse.trim();
+      if (cleanResponse.startsWith('```json')) {
+        cleanResponse = cleanResponse.substring(7); // Remove ```json
+      }
+      if (cleanResponse.startsWith('```')) {
+        cleanResponse = cleanResponse.substring(3); // Remove ```
+      }
+      if (cleanResponse.endsWith('```')) {
+        cleanResponse = cleanResponse.substring(0, cleanResponse.length - 3); // Remove trailing ```
+      }
+      
+      cleanResponse = cleanResponse.trim();
+      console.log('Cleaned response:', cleanResponse.substring(0, 200) + '...');
+      
+      const parsed = JSON.parse(cleanResponse);
       console.log('Successfully parsed JSON:', parsed);
       return parsed;
     } catch (parseError) {
