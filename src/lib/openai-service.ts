@@ -128,7 +128,8 @@ Return only the JSON response, no additional text.`
     const aiResponse = data.choices[0].message.content;
     console.log('AI response content length:', aiResponse.length);
     console.log('AI response content (first 500 chars):', aiResponse.substring(0, 500));
-    console.log('AI response content (last 500 chars):', aiResponse.substring(Math.max(0, aiResponse.length - 500));
+    const last500Start = Math.max(0, aiResponse.length - 500);
+    console.log('AI response content (last 500 chars):', aiResponse.substring(last500Start));
     
     try {
       console.log('Attempting to parse AI response as JSON...');
@@ -140,7 +141,9 @@ Return only the JSON response, no additional text.`
       console.error('Parse error:', parseError);
       console.error('Raw AI response length:', aiResponse.length);
       console.error('Raw AI response (first 1000 chars):', aiResponse.substring(0, 1000));
-      console.error('Raw AI response (last 1000 chars):', aiResponse.substring(Math.max(0, aiResponse.length - 1000));
+      
+      const last1000Start = Math.max(0, aiResponse.length - 1000);
+      console.error('Raw AI response (last 1000 chars):', aiResponse.substring(last1000Start));
       
       // Try to find where the JSON might be malformed
       const jsonStart = aiResponse.indexOf('{');
