@@ -14,6 +14,7 @@ import WellnessHub from "./pages/WellnessHub";
 import R42CoE from "./pages/R42CoE";
 import Recommendations from "./pages/Recommendations";
 import Progress from "./pages/Progress";
+import PDFInsights from "./pages/PDFInsights";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
         <Route path="/r42-coe" element={<R42CoE />} />
           <Route path="/recommendations" element={<Recommendations />} />
           <Route path="/progress" element={<Progress />} />
+          <Route path="/pdf-insights" element={<PDFInsights />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

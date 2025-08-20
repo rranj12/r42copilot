@@ -11,7 +11,8 @@ import {
   User,
   Menu,
   X,
-  Brain
+  Brain,
+  FileText
 } from "lucide-react";
 import R42Logo from "@/components/ui/r42-logo";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -28,6 +29,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigation = [
       { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Biomarkers", href: "/dashboard", icon: Activity },
+  { name: "PDF Insights", href: "/pdf-insights", icon: FileText },
   { name: "NeuroAge Reports", href: "/neuroage", icon: Brain },
   { name: "Iollo Reports", href: "/iollo", icon: Activity },
   { name: "Recommendations", href: "/recommendations", icon: Target },
