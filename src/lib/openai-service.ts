@@ -123,22 +123,37 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
       try {
         const arrayBuffer = event.target?.result as ArrayBuffer;
         
-        // Convert ArrayBuffer to Uint8Array for pdf-parse
-        const uint8Array = new Uint8Array(arrayBuffer);
+        // Import PDF.js dynamically
+        const pdfjsLib = await import('pdfjs-dist');
         
-        // Import pdf-parse dynamically to avoid SSR issues
-        const pdfParse = await import('pdf-parse');
-        const data = await pdfParse.default(uint8Array);
+        // Set worker source for PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
         
-        // Extract the text content
-        const text = data.text;
+        // Load the PDF document
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
         
-        if (!text || text.trim().length === 0) {
+        let fullText = '';
+        
+        // Extract text from each page
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          
+          // Combine text items from the page
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(' ');
+          
+          fullText += pageText + '\n';
+        }
+        
+        if (!fullText || fullText.trim().length === 0) {
           reject(new Error('No text content found in PDF'));
           return;
         }
         
-        resolve(text);
+        resolve(fullText);
       } catch (error) {
         console.error('PDF parsing error:', error);
         reject(new Error(`Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}`));
