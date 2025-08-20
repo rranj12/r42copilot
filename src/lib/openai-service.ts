@@ -121,17 +121,42 @@ Return only the JSON response, no additional text.`
     console.log('OpenAI response:', data);
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response structure:', data);
       throw new Error('Invalid response format from OpenAI API');
     }
     
     const aiResponse = data.choices[0].message.content;
-    console.log('AI response content:', aiResponse);
+    console.log('AI response content length:', aiResponse.length);
+    console.log('AI response content (first 500 chars):', aiResponse.substring(0, 500));
+    console.log('AI response content (last 500 chars):', aiResponse.substring(Math.max(0, aiResponse.length - 500));
     
     try {
-      return JSON.parse(aiResponse);
+      console.log('Attempting to parse AI response as JSON...');
+      const parsed = JSON.parse(aiResponse);
+      console.log('Successfully parsed JSON:', parsed);
+      return parsed;
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', parseError);
-      console.error('Raw response:', aiResponse);
+      console.error('=== JSON PARSE ERROR ===');
+      console.error('Parse error:', parseError);
+      console.error('Raw AI response length:', aiResponse.length);
+      console.error('Raw AI response (first 1000 chars):', aiResponse.substring(0, 1000));
+      console.error('Raw AI response (last 1000 chars):', aiResponse.substring(Math.max(0, aiResponse.length - 1000));
+      
+      // Try to find where the JSON might be malformed
+      const jsonStart = aiResponse.indexOf('{');
+      const jsonEnd = aiResponse.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        const potentialJson = aiResponse.substring(jsonStart, jsonEnd + 1);
+        console.error('Potential JSON section:', potentialJson);
+        try {
+          const parsed = JSON.parse(potentialJson);
+          console.log('Successfully parsed potential JSON section:', parsed);
+          return parsed;
+        } catch (secondError) {
+          console.error('Failed to parse potential JSON section:', secondError);
+        }
+      }
+      
       throw new OpenAIError('Invalid response format from OpenAI');
     }
 
