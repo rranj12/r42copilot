@@ -122,8 +122,19 @@ const PDFInsights = () => {
       setProcessingProgress(20);
       const pdfText = await extractTextFromPDF(selectedFile!);
       
+      console.log('PDF text extracted:', pdfText.substring(0, 500) + '...');
+      console.log('PDF text length:', pdfText.length);
+      
       // Step 2: Analyze with OpenAI
       setProcessingProgress(40);
+      
+      // Check if API key is available
+      if (!import.meta.env.VITE_OPENAI_API_KEY) {
+        throw new Error('OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your .env file.');
+      }
+      
+      console.log('API key available:', !!import.meta.env.VITE_OPENAI_API_KEY);
+      
       const analysis = await analyzePDFContent({
         content: pdfText,
         platform: report.platform,
@@ -169,6 +180,12 @@ const PDFInsights = () => {
 
     } catch (error) {
       console.error('Error processing PDF:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        reportId: report.id,
+        platform: report.platform
+      });
       
       setUploadedFiles(prev => 
         prev.map(r => 
