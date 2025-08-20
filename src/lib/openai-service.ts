@@ -37,14 +37,20 @@ export class OpenAIError extends Error {
 }
 
 export const analyzePDFContent = async (request: PDFAnalysisRequest): Promise<PDFAnalysisResult> => {
+  console.log('=== STARTING PDF ANALYSIS ===');
+  console.log('Request:', request);
+  
   try {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     console.log('API key available:', !!apiKey);
     console.log('API key length:', apiKey ? apiKey.length : 0);
+    console.log('API key starts with:', apiKey ? apiKey.substring(0, 10) + '...' : 'NONE');
+    
     if (!apiKey) {
       throw new OpenAIError('OpenAI API key not found');
     }
     
+    console.log('Making OpenAI API call...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -101,12 +107,16 @@ Return only the JSON response, no additional text.`
       })
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error response:', errorText);
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
+    console.log('Parsing response JSON...');
     const data = await response.json();
     console.log('OpenAI response:', data);
     
@@ -126,6 +136,12 @@ Return only the JSON response, no additional text.`
     }
 
   } catch (error) {
+    console.error('=== ERROR IN PDF ANALYSIS ===');
+    console.error('Error type:', typeof error);
+    console.error('Error message:', error instanceof Error ? error.message : error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error('Full error object:', error);
+    
     if (error instanceof OpenAIError) {
       throw error;
     }
