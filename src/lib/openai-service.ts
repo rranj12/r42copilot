@@ -49,26 +49,48 @@ export const analyzePDFContent = async (request: PDFAnalysisRequest): Promise<PD
         messages: [
           {
             role: 'system',
-            content: `You are an expert longevity analyst. Analyze the PDF content and provide insights in this exact JSON format:
-{
-  "summary": "2-3 sentence summary",
-  "keyMetrics": [
-    {"name": "Metric name", "value": "actual value", "status": "normal/elevated/low/critical", "description": "explanation"}
-  ],
-  "recommendations": ["actionable recommendation 1", "recommendation 2"],
-  "riskFactors": ["risk factor 1", "risk factor 2"],
-  "trends": [
-    {"metric": "metric name", "direction": "improving/declining/stable", "change": "change value", "period": "time period"}
-  ]
-}`
+            content: `You are an expert longevity and healthspan analyst. Your task is to analyze PDF reports from various longevity platforms and provide concise, actionable insights based on the actual content.
+
+Platform Context:
+- NeuroAge: Focuses on brain aging, cognitive biomarkers, and neurological health
+- Jona Health: Comprehensive health optimization and biomarker analysis
+- Iollo: Advanced longevity testing and biological age assessment
+- Function Health: Metabolic health and functional medicine
+- TokuEyes: Eye health and retinal biomarkers
+
+Analysis Requirements:
+1. Provide a concise summary (2-3 sentences) based on the actual PDF content
+2. Identify 3-5 key metrics with their actual values, status, and descriptions from the report
+3. Generate 4-6 actionable recommendations based on the findings
+4. Highlight 2-3 risk factors or areas of concern from the data
+5. Identify trends if multiple measurements are available
+6. Use medical terminology appropriately but explain in accessible language
+7. Base ALL insights on the actual PDF content provided, not generic information
+
+IMPORTANT: Extract real values, metrics, and findings from the provided PDF text. Do not generate placeholder or generic information.
+
+Output Format: Return a valid JSON object with the exact structure specified in the interface.`
           },
           {
             role: 'user',
-            content: `Analyze this ${request.platform} report: ${request.content}`
+            content: `Please analyze this ${request.platform} report and provide insights in the specified JSON format:
+
+Filename: ${request.filename}
+Platform: ${request.platform}
+PDF Content: ${request.content}
+
+Focus on:
+- Key biomarkers and their actual values from the report
+- Healthspan implications based on the data
+- Actionable lifestyle and supplement recommendations from the findings
+- Risk assessment based on actual results
+- Trend analysis if multiple measurements are available
+
+Return only the JSON response, no additional text.`
           }
         ],
         temperature: 0.3,
-        max_tokens: 1000
+        max_tokens: 2000
       })
     });
 
@@ -94,23 +116,37 @@ export const analyzePDFContent = async (request: PDFAnalysisRequest): Promise<PD
 };
 
 export const extractTextFromPDF = async (file: File): Promise<string> => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const mockContent = `Sample PDF content for ${file.name}
-      
-This simulates the actual text extracted from your PDF. The AI will analyze this content to provide insights.
-
-Key findings from your ${file.name}:
-- Biomarker values and test results
-- Reference ranges and clinical notes
-- Recommendations and risk factors
-
-This allows the system to demonstrate real AI analysis while you implement proper PDF parsing.`;
-      
-      resolve(mockContent);
+    
+    reader.onload = async (event) => {
+      try {
+        const arrayBuffer = event.target?.result as ArrayBuffer;
+        
+        // Convert ArrayBuffer to Uint8Array for pdf-parse
+        const uint8Array = new Uint8Array(arrayBuffer);
+        
+        // Import pdf-parse dynamically to avoid SSR issues
+        const pdfParse = await import('pdf-parse');
+        const data = await pdfParse.default(uint8Array);
+        
+        // Extract the text content
+        const text = data.text;
+        
+        if (!text || text.trim().length === 0) {
+          reject(new Error('No text content found in PDF'));
+          return;
+        }
+        
+        resolve(text);
+      } catch (error) {
+        console.error('PDF parsing error:', error);
+        reject(new Error(`Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      }
     };
-    reader.readAsText(file, 'UTF-8');
+    
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsArrayBuffer(file);
   });
 };
 
