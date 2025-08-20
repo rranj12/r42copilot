@@ -36,13 +36,20 @@ export class OpenAIError extends Error {
   }
 }
 
-export const analyzePDFContent = async (request: PDFAnalysisRequest): Promise<PDFAnalysisResponse> => {
+export const analyzePDFContent = async (request: PDFAnalysisRequest): Promise<PDFAnalysisResult> => {
   try {
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    console.log('API key available:', !!apiKey);
+    console.log('API key length:', apiKey ? apiKey.length : 0);
+    if (!apiKey) {
+      throw new OpenAIError('OpenAI API key not found');
+    }
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY || ''}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
@@ -95,15 +102,26 @@ Return only the JSON response, no additional text.`
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error response:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI response:', data);
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response format from OpenAI API');
+    }
+    
     const aiResponse = data.choices[0].message.content;
+    console.log('AI response content:', aiResponse);
     
     try {
       return JSON.parse(aiResponse);
-    } catch {
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', parseError);
+      console.error('Raw response:', aiResponse);
       throw new OpenAIError('Invalid response format from OpenAI');
     }
 
