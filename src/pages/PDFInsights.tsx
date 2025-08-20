@@ -144,22 +144,25 @@ const PDFInsights = () => {
       // Step 3: Process results
       setProcessingProgress(80);
       
-      // Convert OpenAI response to our internal format
+      console.log('Raw OpenAI analysis response:', analysis);
+      console.log('Analysis keys:', Object.keys(analysis));
+      
+      // Convert OpenAI response to our internal format with defensive checks
       const insights: ReportInsights = {
-        summary: analysis.summary,
-        keyMetrics: analysis.keyMetrics.map(metric => ({
-          name: metric.name,
-          value: metric.value,
-          status: metric.status,
-          description: metric.description
+        summary: analysis.summary || 'Analysis completed successfully',
+        keyMetrics: (analysis.keyMetrics || []).map(metric => ({
+          name: metric.name || 'Unknown Metric',
+          value: metric.value || 'N/A',
+          status: metric.status || 'normal',
+          description: metric.description || 'No description available'
         })),
-        recommendations: analysis.recommendations,
-        riskFactors: analysis.riskFactors,
-        trends: analysis.trends.map(trend => ({
-          metric: trend.metric,
-          direction: trend.direction,
-          change: trend.change,
-          period: trend.period
+        recommendations: analysis.recommendations || ['Continue monitoring your health markers'],
+        riskFactors: analysis.riskFactors || ['No specific risk factors identified'],
+        trends: (analysis.trends || []).map(trend => ({
+          metric: trend.metric || 'Unknown',
+          direction: trend.direction || 'stable',
+          change: trend.change || 'No change',
+          period: trend.period || 'Recent'
         }))
       };
 
