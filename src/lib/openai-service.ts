@@ -207,7 +207,7 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
         // Smart text extraction with length limits
         let text = '';
         let charCount = 0;
-        const maxChars = 50000; // Limit to ~12k tokens (well under OpenAI's limit)
+        const maxChars = 200000; // Limit to ~50k tokens (Gemini can handle much more)
         
         // Look for readable text patterns that are likely to be actual content
         for (let i = 0; i < uint8Array.length && charCount < maxChars; i++) {
@@ -261,7 +261,7 @@ export const validatePDFFile = (file: File): boolean => {
   if (file.type !== 'application/pdf') {
     return false;
   }
-  if (file.size > 10 * 1024 * 1024) {
+  if (file.size > 50 * 1024 * 1024) { // 50MB limit
     return false;
   }
   return true;

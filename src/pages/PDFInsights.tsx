@@ -83,8 +83,8 @@ const PDFInsights = () => {
       } else {
         if (file.type !== 'application/pdf') {
           invalidFiles.push(`${file.name}: Invalid file type`);
-        } else if (file.size > 10 * 1024 * 1024) {
-          invalidFiles.push(`${file.name}: File too large (>10MB)`);
+        } else if (file.size > 50 * 1024 * 1024) {
+          invalidFiles.push(`${file.name}: File too large (>50MB)`);
         }
       }
     });
