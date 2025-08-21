@@ -63,6 +63,7 @@ const PDFInsights = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [selectedReport, setSelectedReport] = useState<PDFReport | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load existing PDFs from user data
@@ -431,20 +432,23 @@ const PDFInsights = () => {
                         if (file.status === 'ready' || !file.insights) {
                           // Trigger AI analysis for this PDF
                           analyzeExistingPDF(file);
+                        } else if (file.status === 'completed' && file.insights) {
+                          // Show insights modal
+                          setSelectedReport(file);
                         }
                       }}
-                      disabled={file.status === 'processing' || file.status === 'completed'}
+                      disabled={file.status === 'processing'}
                     >
-                                          {file.status === 'processing' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Analyzing...
-                      </>
-                    ) : file.status === 'completed' && file.insights ? (
-                      'View Insights'
-                    ) : (
-                      'Analyze with AI'
-                    )}
+                      {file.status === 'processing' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : file.status === 'completed' && file.insights ? (
+                        'View Insights'
+                      ) : (
+                        'Analyze with AI'
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -663,6 +667,114 @@ const PDFInsights = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Insights Modal */}
+      {selectedReport && selectedReport.insights && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-800">{selectedReport.filename}</h2>
+                  <p className="text-slate-600">{selectedReport.platform} • {selectedReport.uploadDate.toLocaleDateString()}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedReport(null)}
+                  className="text-slate-500 hover:text-slate-700"
+                >
+                  ✕
+                </Button>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2">AI Summary</h3>
+                  <p className="text-slate-600">{selectedReport.insights.summary}</p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800 mb-3">Key Metrics</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {selectedReport.insights.keyMetrics.map((metric, index) => (
+                      <div key={index} className="p-4 bg-slate-50 rounded-lg border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-slate-700">{metric.name}</span>
+                          <Badge 
+                            className={
+                              metric.status === 'normal' ? 'bg-green-100 text-green-800' :
+                              metric.status === 'elevated' ? 'bg-yellow-100 text-yellow-800' :
+                              metric.status === 'low' ? 'bg-blue-100 text-blue-800' :
+                              'bg-red-100 text-red-800'
+                            }
+                          >
+                            {metric.value}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-slate-600">{metric.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-3">Recommendations</h3>
+                    <ul className="space-y-2">
+                      {selectedReport.insights.recommendations.map((rec, index) => (
+                        <li key={index} className="text-slate-600 flex items-start gap-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                          {rec}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-3">Risk Factors</h3>
+                    <ul className="space-y-2">
+                      {selectedReport.insights.riskFactors.map((risk, index) => (
+                        <li key={index} className="text-slate-600 flex items-start gap-2">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                          {risk}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {selectedReport.insights.trends.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-3">Trends</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedReport.insights.trends.map((trend, index) => (
+                        <div key={index} className="p-4 bg-slate-50 rounded-lg border">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-slate-700">{trend.metric}</span>
+                            <Badge 
+                              className={
+                                trend.direction === 'improving' ? 'bg-green-100 text-green-800' :
+                                trend.direction === 'declining' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }
+                            >
+                              {trend.direction}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-600">
+                            {trend.change} over {trend.period}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
