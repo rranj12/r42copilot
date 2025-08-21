@@ -11,7 +11,7 @@ import { Upload, ArrowRight, ArrowLeft, Check, Apple } from "lucide-react";
 import R42Logo from "@/components/ui/r42-logo";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { setUserData } from "@/lib/user-data";
+import { setUserData, addUploadedPDF } from "@/lib/user-data";
 import { generateNeuroAgeData, generateIolloData } from "@/lib/data-visualization";
 import { extractTextFromPDF } from "@/lib/openai-service";
 
@@ -109,6 +109,9 @@ const Onboarding = () => {
             ...prev,
             uploadedPDFs: [...(prev.uploadedPDFs || []), pdfRecord]
           }));
+
+          // Also store in the global user data store
+          addUploadedPDF(pdfRecord);
 
           // Generate data based on provider
           if (provider === "NeuroAge") {

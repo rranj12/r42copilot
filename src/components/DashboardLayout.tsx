@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import R42Logo from "@/components/ui/r42-logo";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getUserData, getUserName, getUploadedPDFsCount } from "@/lib/user-data";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -23,8 +24,15 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Load user data on component mount
+  useEffect(() => {
+    const data = getUserData();
+    setUserData(data);
+  }, []);
 
   const navigation = [
       { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -108,12 +116,21 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <div className="flex items-center space-x-3">
               <Avatar>
                 <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-600 text-white">
-                  AJ
+                  {userData ? getUserName().substring(0, 2).toUpperCase() : 'U'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium text-slate-800">Alex Johnson</div>
-                <div className="text-sm text-slate-600">Premium Member</div>
+                <div className="font-medium text-slate-800">
+                  {userData ? getUserName() : 'User'}
+                </div>
+                <div className="text-sm text-slate-600">
+                  {userData ? 'Premium Member' : 'Guest'}
+                </div>
+                {userData && (
+                  <div className="text-xs text-slate-500 mt-1">
+                    {getUploadedPDFsCount()} PDF{getUploadedPDFsCount() !== 1 ? 's' : ''} stored
+                  </div>
+                )}
               </div>
             </div>
           </div>

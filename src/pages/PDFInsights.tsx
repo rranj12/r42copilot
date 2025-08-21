@@ -18,7 +18,7 @@ import {
   Loader2
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { getUserData } from "@/lib/user-data";
+import { getUserData, updatePDFInsights, hasUploadedPDFs, getUploadedPDFsCount } from "@/lib/user-data";
 import { 
   analyzePDFContent, 
   extractTextFromPDF, 
@@ -69,8 +69,8 @@ const PDFInsights = () => {
   // Load existing PDFs from user data
   useEffect(() => {
     const userData = getUserData();
-    if (userData?.uploadedPDFs && userData.uploadedPDFs.length > 0) {
-      const existingPDFs: PDFReport[] = userData.uploadedPDFs.map(pdf => ({
+    if (hasUploadedPDFs()) {
+      const existingPDFs: PDFReport[] = userData!.uploadedPDFs!.map(pdf => ({
         id: pdf.id,
         filename: pdf.filename,
         platform: pdf.platform,
@@ -80,6 +80,9 @@ const PDFInsights = () => {
         insights: pdf.insights
       }));
       setUploadedFiles(existingPDFs);
+      console.log(`Loaded ${getUploadedPDFsCount()} PDFs from user data`);
+    } else {
+      console.log('No uploaded PDFs found in user data');
     }
   }, []);
 
@@ -179,6 +182,9 @@ const PDFInsights = () => {
       setUploadedFiles(prev => 
         prev.map(f => f.id === file.id ? { ...f, status: 'completed', insights } : f)
       );
+
+      // Also update the global user data store
+      updatePDFInsights(file.id, insights);
       
       toast({
         title: "Analysis Complete!",
