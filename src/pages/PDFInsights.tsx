@@ -60,7 +60,7 @@ interface Trend {
 const PDFInsights = () => {
   const [uploadedFiles, setUploadedFiles] = useState<PDFReport[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [processingProgress, setProcessingProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,78 +73,104 @@ const PDFInsights = () => {
   ];
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && validatePDFFile(file)) {
-      setSelectedFile(file);
-    } else if (file) {
-      if (file.type !== 'application/pdf') {
+    const files = Array.from(event.target.files || []);
+    const validFiles: File[] = [];
+    const invalidFiles: string[] = [];
+    
+    files.forEach(file => {
+      if (validatePDFFile(file)) {
+        validFiles.push(file);
+      } else {
+        if (file.type !== 'application/pdf') {
+          invalidFiles.push(`${file.name}: Invalid file type`);
+        } else if (file.size > 10 * 1024 * 1024) {
+          invalidFiles.push(`${file.name}: File too large (>10MB)`);
+        }
+      }
+    });
+    
+    if (validFiles.length > 0) {
+      setSelectedFiles(validFiles);
+      if (invalidFiles.length > 0) {
         toast({
-          title: "Invalid file type",
-          description: "Please select a PDF file.",
-          variant: "destructive",
-        });
-      } else if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select a PDF file smaller than 10MB.",
+          title: "Some files were invalid",
+          description: invalidFiles.join(', '),
           variant: "destructive",
         });
       }
+    } else if (invalidFiles.length > 0) {
+      toast({
+        title: "No valid files selected",
+        description: invalidFiles.join(', '),
+        variant: "destructive",
+      });
     }
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (selectedFiles.length === 0) return;
 
-    const platform = prompt("Which platform is this report from? (NeuroAge, Jona Health, Iollo, Function Health, TokuEyes)") || "Unknown";
+    const platform = prompt("Which platform are these reports from? (NeuroAge, Jona Health, Iollo, Function Health, TokuEyes)") || "Unknown";
     
-    const newReport: PDFReport = {
-      id: Date.now().toString(),
-      filename: selectedFile.name,
+    // Create reports for all selected files
+    const reports: PDFReport[] = selectedFiles.map(file => ({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      filename: file.name,
       platform,
       uploadDate: new Date(),
       status: 'processing'
-    };
+    }));
 
-    setUploadedFiles(prev => [newReport, ...prev]);
-    setSelectedFile(null);
+    setUploadedFiles(prev => [...prev, ...reports]);
+    setSelectedFiles([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
 
-    await processPDF(newReport);
+    await processMultiplePDFs(reports);
   };
 
-  const processPDF = async (report: PDFReport) => {
+  const processMultiplePDFs = async (reports: PDFReport[]) => {
     setIsProcessing(true);
     setProcessingProgress(0);
 
     try {
-      // Step 1: Extract text from PDF
+      // Step 1: Extract text from all PDFs
       setProcessingProgress(20);
-      const pdfText = await extractTextFromPDF(selectedFile!);
+      const pdfTexts = await Promise.all(
+        selectedFiles.map(file => extractTextFromPDF(file))
+      );
       
-      console.log('PDF text extracted:', pdfText.substring(0, 500) + '...');
-      console.log('PDF text length:', pdfText.length);
+      console.log(`Processing ${selectedFiles.length} PDFs`);
+      pdfTexts.forEach((text, index) => {
+        console.log(`PDF ${index + 1} text length:`, text.length);
+      });
       
-      // Step 2: Analyze with OpenAI
+      // Step 2: Combine all PDF content for comprehensive analysis
+      const combinedContent = pdfTexts.map((text, index) => 
+        `=== ${selectedFiles[index].name} ===\n${text}\n\n`
+      ).join('');
+      
+      console.log('Combined content length:', combinedContent.length);
+      
+      // Step 3: Analyze with Gemini
       setProcessingProgress(40);
       
       // Check if API key is available
-          if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      throw new Error('Gemini API key not found. Please add VITE_GEMINI_API_KEY to your .env file.');
-    }
+      if (!import.meta.env.VITE_GEMINI_API_KEY) {
+        throw new Error('Gemini API key not found. Please add VITE_GEMINI_API_KEY to your .env file.');
+      }
 
-    console.log('API key available:', !!import.meta.env.VITE_GEMINI_API_KEY);
+      console.log('API key available:', !!import.meta.env.VITE_GEMINI_API_KEY);
       
       const analysis = await analyzePDFContent({
-        content: pdfText,
-        platform: report.platform,
-        filename: report.filename
+        content: combinedContent,
+        platform: reports[0].platform,
+        filename: `${selectedFiles.length} reports combined`
       });
       
-      // Step 3: Process results
+      // Step 4: Process results
       setProcessingProgress(80);
       
-      console.log('Raw OpenAI analysis response:', analysis);
+      console.log('Raw Gemini analysis response:', analysis);
       console.log('Analysis keys:', Object.keys(analysis));
       console.log('Analysis structure:', {
         summary: typeof analysis.summary,
@@ -182,10 +208,11 @@ const PDFInsights = () => {
           : []
       };
 
+      // Update all reports with the same insights
       setUploadedFiles(prev => 
         prev.map(r => 
-          r.id === report.id 
-            ? { ...r, status: 'completed', insights, pdfContent: pdfText }
+          reports.some(report => report.id === r.id)
+            ? { ...r, status: 'completed', insights, pdfContent: pdfTexts[reports.findIndex(report => report.id === r.id)] }
             : r
         )
       );
@@ -194,21 +221,22 @@ const PDFInsights = () => {
       
       toast({
         title: "Analysis Complete!",
-        description: `Your ${report.platform} report has been processed with real AI analysis.`,
+        description: `Your ${selectedFiles.length} ${reports[0].platform} reports have been processed with comprehensive AI analysis.`,
       });
 
     } catch (error) {
-      console.error('Error processing PDF:', error);
+      console.error('Error processing PDFs:', error);
       console.error('Error details:', {
         message: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
-        reportId: report.id,
-        platform: report.platform
+        reportIds: reports.map(r => r.id),
+        platform: reports[0].platform
       });
       
+      // Mark all reports as failed
       setUploadedFiles(prev => 
         prev.map(r => 
-          r.id === report.id 
+          reports.some(report => report.id === r.id)
             ? { ...r, status: 'error' }
             : r
         )
@@ -216,7 +244,7 @@ const PDFInsights = () => {
 
       toast({
         title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Failed to process PDF. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to process PDFs. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -275,37 +303,42 @@ const PDFInsights = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="pdf-upload">Select PDF File</Label>
+            <Label htmlFor="pdf-upload">Select PDF Files (Multiple)</Label>
             <Input
               id="pdf-upload"
               type="file"
               accept=".pdf"
+              multiple
               onChange={handleFileSelect}
               ref={fileInputRef}
             />
           </div>
           
-          {selectedFile && (
-            <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-              <FileText className="w-5 h-5 text-blue-600" />
-              <span className="text-sm text-blue-800">{selectedFile.name}</span>
+          {selectedFiles.length > 0 && (
+            <div className="space-y-2">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm text-blue-800">{file.name}</span>
+                </div>
+              ))}
             </div>
           )}
 
           <Button 
             onClick={handleUpload} 
-            disabled={!selectedFile || isProcessing}
+            disabled={selectedFiles.length === 0 || isProcessing}
             className="w-full"
           >
             {isProcessing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Processing with AI...
+                Processing {selectedFiles.length} PDFs with AI...
               </>
             ) : (
               <>
                 <Upload className="w-4 h-4 mr-2" />
-                Upload & Analyze with AI
+                Upload & Analyze {selectedFiles.length > 0 ? `${selectedFiles.length} PDFs` : 'PDFs'} with AI
               </>
             )}
           </Button>
