@@ -109,31 +109,69 @@ const PDFInsights = () => {
       setProcessingProgress(80);
       
       // Convert Gemini response to our internal format
+      console.log('Raw AI analysis response:', analysis);
+      console.log('Analysis structure:', {
+        summary: typeof analysis.summary,
+        keyMetrics: Array.isArray(analysis.keyMetrics) ? analysis.keyMetrics.length : typeof analysis.keyMetrics,
+        recommendations: Array.isArray(analysis.recommendations) ? analysis.recommendations.length : typeof analysis.recommendations,
+        riskFactors: Array.isArray(analysis.riskFactors) ? analysis.riskFactors.length : typeof analysis.riskFactors,
+        trends: Array.isArray(analysis.trends) ? analysis.trends.length : typeof analysis.trends
+      });
+
       const insights: ReportInsights = {
         summary: analysis.summary || 'Analysis completed successfully',
-        keyMetrics: Array.isArray(analysis.keyMetrics)
-          ? analysis.keyMetrics.map(metric => ({
-              name: metric?.name || 'Unknown Metric',
-              value: metric?.value || 'N/A',
-              status: metric?.status || 'normal',
-              description: metric?.description || 'No description available'
+        keyMetrics: Array.isArray(analysis.keyMetrics) && analysis.keyMetrics.length > 0
+          ? analysis.keyMetrics.filter(metric => metric && metric.name && metric.value).map(metric => ({
+              name: metric.name,
+              value: metric.value,
+              status: metric.status || 'normal',
+              description: metric.description || 'No description available'
             }))
           : [],
-        recommendations: Array.isArray(analysis.recommendations)
-          ? analysis.recommendations
+        recommendations: Array.isArray(analysis.recommendations) && analysis.recommendations.length > 0
+          ? analysis.recommendations.filter(rec => rec && rec.trim().length > 0)
           : ['Continue monitoring your health markers'],
-        riskFactors: Array.isArray(analysis.riskFactors)
-          ? analysis.riskFactors
+        riskFactors: Array.isArray(analysis.riskFactors) && analysis.riskFactors.length > 0
+          ? analysis.riskFactors.filter(risk => risk && risk.trim().length > 0)
           : ['No specific risk factors identified'],
-        trends: Array.isArray(analysis.trends)
-          ? analysis.trends.map(trend => ({
-              metric: trend?.metric || 'Unknown',
-              direction: trend?.direction || 'stable',
-              change: trend?.change || 'No change',
-              period: trend?.period || 'Recent'
+        trends: Array.isArray(analysis.trends) && analysis.trends.length > 0
+          ? analysis.trends.filter(trend => trend && trend.metric).map(trend => ({
+              metric: trend.metric,
+              direction: trend.direction || 'stable',
+              change: trend.change || 'No change',
+              period: trend.period || 'Recent'
             }))
           : []
       };
+
+      console.log('Processed insights:', insights);
+      console.log('Insights structure:', {
+        summary: insights.summary,
+        keyMetricsCount: insights.keyMetrics.length,
+        recommendationsCount: insights.recommendations.length,
+        riskFactorsCount: insights.riskFactors.length,
+        trendsCount: insights.trends.length
+      });
+
+      // If all sections are empty, create fallback insights
+      if (insights.keyMetrics.length === 0 && insights.recommendations.length === 0 && insights.riskFactors.length === 0) {
+        console.log('All sections empty, creating fallback insights');
+        insights.keyMetrics = [
+          {
+            name: 'PDF Analysis',
+            value: 'Completed',
+            status: 'normal',
+            description: 'AI analysis completed but no specific metrics found in the PDF content'
+          }
+        ];
+        insights.recommendations = [
+          'The PDF has been analyzed but contains limited structured data',
+          'Consider uploading a more detailed health report for comprehensive insights'
+        ];
+        insights.riskFactors = [
+          'Unable to identify specific risk factors from the provided content'
+        ];
+      }
       
       setProcessingProgress(100);
       
