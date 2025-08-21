@@ -34,8 +34,93 @@ let userData: UserData | null = null;
 
 export const setUserData = (data: UserData) => {
   userData = data;
-  // Also store in localStorage for persistence
-  localStorage.setItem('r42-user-data', JSON.stringify(data));
+  
+  // Clear storage if it's getting full
+  clearStorageIfNeeded();
+  
+  try {
+    // Compress and limit data size for localStorage
+    const compressedData = compressUserData(data);
+    localStorage.setItem('r42-user-data', compressedData);
+    console.log('User data saved successfully to localStorage');
+  } catch (error) {
+    console.error('Failed to save to localStorage:', error);
+    
+    // If localStorage fails, try to save essential data only
+    try {
+      const essentialData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        age: data.age,
+        sex: data.sex,
+        height: data.height,
+        weight: data.weight,
+        healthGoals: data.healthGoals,
+        currentSupplements: data.currentSupplements,
+        diagnosticData: data.diagnosticData,
+        appleHealthConnected: data.appleHealthConnected,
+        researchConsent: data.researchConsent,
+        // Store only metadata for large files
+        appleHealthData: data.appleHealthData ? {
+          filename: data.appleHealthData.filename,
+          recordCount: data.appleHealthData.recordCount,
+          healthMetrics: data.appleHealthData.healthMetrics,
+          // Don't store raw XML in localStorage
+          hasRawData: !!data.appleHealthData.rawXml
+        } : undefined,
+        neuroAgeData: data.neuroAgeData,
+        iolloData: data.iolloData,
+        jonaHealthData: data.jonaHealthData,
+        uploadedPDFs: data.uploadedPDFs ? data.uploadedPDFs.map(pdf => ({
+          id: pdf.id,
+          filename: pdf.filename,
+          platform: pdf.platform,
+          uploadDate: pdf.uploadDate,
+          // Don't store full PDF content in localStorage
+          hasContent: !!pdf.content,
+          insights: pdf.insights
+        })) : undefined
+      };
+      
+      localStorage.setItem('r42-user-data', JSON.stringify(essentialData));
+      console.log('Essential user data saved to localStorage (large files excluded)');
+    } catch (fallbackError) {
+      console.error('Failed to save even essential data:', fallbackError);
+      // At least keep it in memory
+      console.log('User data kept in memory only');
+    }
+  }
+};
+
+// Compress user data to fit in localStorage
+const compressUserData = (data: UserData): string => {
+  // Create a compressed version without large raw data
+  const compressedData = {
+    ...data,
+    appleHealthData: data.appleHealthData ? {
+      filename: data.appleHealthData.filename,
+      recordCount: data.appleHealthData.recordCount,
+      healthMetrics: data.appleHealthData.healthMetrics,
+      // Store only first 1000 chars of raw XML for analysis
+      rawXml: data.appleHealthData.rawXml ? data.appleHealthData.rawXml.substring(0, 1000) : undefined
+    } : undefined,
+    uploadedPDFs: data.uploadedPDFs ? data.uploadedPDFs.map(pdf => ({
+      ...pdf,
+      // Store only first 2000 chars of PDF content
+      content: pdf.content ? pdf.content.substring(0, 2000) : undefined
+    })) : undefined
+  };
+  
+  const jsonString = JSON.stringify(compressedData);
+  console.log(`Compressed data size: ${jsonString.length} characters`);
+  
+  // Check if it's still too large
+  if (jsonString.length > 5000000) { // 5MB limit
+    throw new Error('Data too large even after compression');
+  }
+  
+  return jsonString;
 };
 
 export const getUserData = (): UserData | null => {
@@ -101,4 +186,37 @@ export const updatePDFInsights = (pdfId: string, insights: any) => {
 export const clearUserData = () => {
   userData = null;
   localStorage.removeItem('r42-user-data');
+};
+
+export const clearStorageIfNeeded = () => {
+  try {
+    // Check localStorage usage
+    let totalSize = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) {
+        totalSize += localStorage.getItem(key)?.length || 0;
+      }
+    }
+    
+    console.log(`Current localStorage usage: ${totalSize} characters`);
+    
+    // If usage is high, clear old data
+    if (totalSize > 4000000) { // 4MB threshold
+      console.log('localStorage usage high, clearing old data...');
+      
+      // Keep only essential keys
+      const essentialKeys = ['r42-user-data'];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && !essentialKeys.includes(key)) {
+          localStorage.removeItem(key);
+        }
+      }
+      
+      console.log('Old data cleared from localStorage');
+    }
+  } catch (error) {
+    console.error('Error checking localStorage usage:', error);
+  }
 }; 

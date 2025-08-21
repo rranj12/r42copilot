@@ -163,7 +163,7 @@ const Onboarding = () => {
             filename: file.name,
             recordCount,
             healthMetrics,
-            rawXml: text.substring(0, 10000) // Store first 10k chars for AI analysis
+            rawXml: text.substring(0, 5000) // Store first 5k chars for AI analysis (reduced for localStorage)
           };
           
           updateFormData("appleHealthData", appleHealthData);
