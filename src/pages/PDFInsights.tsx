@@ -129,11 +129,11 @@ const PDFInsights = () => {
       setProcessingProgress(40);
       
       // Check if API key is available
-      if (!import.meta.env.VITE_OPENAI_API_KEY) {
-        throw new Error('OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your .env file.');
-      }
-      
-      console.log('API key available:', !!import.meta.env.VITE_OPENAI_API_KEY);
+          if (!import.meta.env.VITE_GEMINI_API_KEY) {
+      throw new Error('Gemini API key not found. Please add VITE_GEMINI_API_KEY to your .env file.');
+    }
+
+    console.log('API key available:', !!import.meta.env.VITE_GEMINI_API_KEY);
       
       const analysis = await analyzePDFContent({
         content: pdfText,
