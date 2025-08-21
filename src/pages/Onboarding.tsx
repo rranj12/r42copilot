@@ -17,6 +17,7 @@ import { extractTextFromPDF } from "@/lib/openai-service";
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -40,17 +41,47 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < 4) {
       setStep(step + 1);
     } else {
       // Complete onboarding
-      setUserData(formData);
-      toast({
-        title: "Profile Created Successfully!",
-        description: "Your personalized longevity plan is being generated.",
-      });
-      navigate("/dashboard");
+      console.log('Completing onboarding with data:', formData);
+      
+      // Validate required fields
+      if (!formData.firstName || !formData.lastName || !formData.email) {
+        toast({
+          title: "Missing Information",
+          description: "Please fill in all required fields (First Name, Last Name, Email).",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setIsSubmitting(true);
+      
+      try {
+        setUserData(formData);
+        console.log('User data saved successfully');
+        
+        toast({
+          title: "Profile Created Successfully!",
+          description: "Your personalized longevity plan is being generated.",
+        });
+        
+        console.log('Navigating to dashboard...');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay to show success
+        navigate("/dashboard");
+      } catch (error) {
+        console.error('Error completing onboarding:', error);
+        toast({
+          title: "Setup Error",
+          description: "There was an error completing your setup. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -682,10 +713,20 @@ const Onboarding = () => {
             
             <Button
               onClick={handleNext}
+              disabled={isSubmitting}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
             >
-              {step === 4 ? "Complete Setup" : "Continue"}
-              <ArrowRight className="w-4 h-4 ml-2" />
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {step === 4 ? "Setting Up..." : "Processing..."}
+                </>
+              ) : (
+                <>
+                  {step === 4 ? "Complete Setup" : "Continue"}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
             </Button>
           </div>
         </Card>
