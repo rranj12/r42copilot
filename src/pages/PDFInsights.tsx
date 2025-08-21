@@ -689,6 +689,14 @@ const PDFInsights = () => {
               </div>
 
               <div className="space-y-6">
+                {/* Debug Section */}
+                <div className="p-4 bg-gray-50 rounded-lg border">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-2">Debug: Raw Insights Data</h3>
+                  <pre className="text-xs text-gray-600 overflow-auto max-h-32">
+                    {JSON.stringify(selectedReport.insights, null, 2)}
+                  </pre>
+                </div>
+
                 <div>
                   <h3 className="text-lg font-semibold text-slate-800 mb-2">AI Summary</h3>
                   <p className="text-slate-600">{selectedReport.insights.summary}</p>
@@ -696,51 +704,72 @@ const PDFInsights = () => {
 
                 <div>
                   <h3 className="text-lg font-semibold text-slate-800 mb-3">Key Metrics</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {selectedReport.insights.keyMetrics.map((metric, index) => (
-                      <div key={index} className="p-4 bg-slate-50 rounded-lg border">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-slate-700">{metric.name}</span>
-                          <Badge 
-                            className={
-                              metric.status === 'normal' ? 'bg-green-100 text-green-800' :
-                              metric.status === 'elevated' ? 'bg-yellow-100 text-yellow-800' :
-                              metric.status === 'low' ? 'bg-blue-100 text-blue-800' :
-                              'bg-red-100 text-red-800'
-                            }
-                          >
-                            {metric.value}
-                          </Badge>
+                  {selectedReport.insights.keyMetrics && selectedReport.insights.keyMetrics.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {selectedReport.insights.keyMetrics.map((metric, index) => (
+                        <div key={index} className="p-4 bg-slate-50 rounded-lg border">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-slate-700">{metric.name}</span>
+                            <Badge 
+                              className={
+                                metric.status === 'normal' ? 'bg-green-100 text-green-800' :
+                                metric.status === 'elevated' ? 'bg-yellow-100 text-yellow-800' :
+                                metric.status === 'low' ? 'bg-blue-100 text-blue-800' :
+                                'bg-red-100 text-red-800'
+                              }
+                            >
+                              {metric.value}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-600">{metric.description}</p>
                         </div>
-                        <p className="text-sm text-slate-600">{metric.description}</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <p className="text-yellow-800">No key metrics found in the analysis.</p>
+                      <p className="text-sm text-yellow-700 mt-1">Debug info: {JSON.stringify(selectedReport.insights.keyMetrics)}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h3 className="text-lg font-semibold text-slate-800 mb-3">Recommendations</h3>
-                    <ul className="space-y-2">
-                      {selectedReport.insights.recommendations.map((rec, index) => (
-                        <li key={index} className="text-slate-600 flex items-start gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                          {rec}
-                        </li>
-                      ))}
-                    </ul>
+                    {selectedReport.insights.recommendations && selectedReport.insights.recommendations.length > 0 ? (
+                      <ul className="space-y-2">
+                        {selectedReport.insights.recommendations.map((rec, index) => (
+                          <li key={index} className="text-slate-600 flex items-start gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                            {rec}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-yellow-800">No recommendations found in the analysis.</p>
+                        <p className="text-sm text-yellow-700 mt-1">Debug info: {JSON.stringify(selectedReport.insights.recommendations)}</p>
+                      </div>
+                    )}
                   </div>
 
                   <div>
                     <h3 className="text-lg font-semibold text-slate-800 mb-3">Risk Factors</h3>
-                    <ul className="space-y-2">
-                      {selectedReport.insights.riskFactors.map((risk, index) => (
-                        <li key={index} className="text-slate-600 flex items-start gap-2">
-                          <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
-                          {risk}
-                        </li>
-                      ))}
-                    </ul>
+                    {selectedReport.insights.riskFactors && selectedReport.insights.riskFactors.length > 0 ? (
+                      <ul className="space-y-2">
+                        {selectedReport.insights.riskFactors.map((risk, index) => (
+                          <li key={index} className="text-slate-600 flex items-start gap-2">
+                            <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                            {risk}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-yellow-800">No risk factors found in the analysis.</p>
+                        <p className="text-sm text-yellow-700 mt-1">Debug info: {JSON.stringify(selectedReport.insights.riskFactors)}</p>
+                      </div>
+                      )}
                   </div>
                 </div>
 
