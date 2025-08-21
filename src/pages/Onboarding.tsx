@@ -33,6 +33,7 @@ const Onboarding = () => {
       iollo: false,
     },
     appleHealthConnected: false,
+    appleHealthData: null,
     researchConsent: false,
   });
   
@@ -78,13 +79,87 @@ const Onboarding = () => {
     }));
   };
 
-  const handleAppleHealthConnect = () => {
-    // Simulate Apple Health connection
-    updateFormData("appleHealthConnected", true);
-    toast({
-      title: "Apple Health Connected!",
-      description: "Your health data is now syncing with R42 Copilot.",
-    });
+  const handleAppleHealthUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type === 'text/xml' || file.name.endsWith('.xml')) {
+        try {
+          // Parse the XML file
+          const text = await file.text();
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(text, 'text/xml');
+          
+          // Extract health records
+          const healthRecords = xmlDoc.querySelectorAll('Record');
+          const recordCount = healthRecords.length;
+          
+          // Extract key health metrics
+          const healthMetrics = {
+            heartRate: [],
+            steps: [],
+            sleep: [],
+            weight: [],
+            bloodPressure: [],
+            activity: []
+          };
+          
+          healthRecords.forEach(record => {
+            const type = record.getAttribute('type');
+            const value = record.getAttribute('value');
+            const startDate = record.getAttribute('startDate');
+            const endDate = record.getAttribute('endDate');
+            
+            if (type && value && startDate) {
+              const recordData = { value, startDate, endDate };
+              
+              if (type.includes('HeartRate')) {
+                healthMetrics.heartRate.push(recordData);
+              } else if (type.includes('StepCount')) {
+                healthMetrics.steps.push(recordData);
+              } else if (type.includes('Sleep')) {
+                healthMetrics.sleep.push(recordData);
+              } else if (type.includes('BodyMass')) {
+                healthMetrics.weight.push(recordData);
+              } else if (type.includes('BloodPressure')) {
+                healthMetrics.bloodPressure.push(recordData);
+              } else if (type.includes('ActiveEnergyBurned')) {
+                healthMetrics.activity.push(recordData);
+              }
+            }
+          });
+          
+          const appleHealthData = {
+            filename: file.name,
+            recordCount,
+            healthMetrics,
+            rawXml: text.substring(0, 10000) // Store first 10k chars for AI analysis
+          };
+          
+          updateFormData("appleHealthData", appleHealthData);
+          
+          toast({
+            title: "Apple Health Data Uploaded!",
+            description: `${recordCount} health records processed successfully.`,
+          });
+          
+          console.log('Apple Health data processed:', appleHealthData);
+          
+        } catch (error) {
+          console.error('Error processing Apple Health XML:', error);
+          toast({
+            title: "Upload Failed",
+            description: "Failed to process Apple Health XML file. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload an XML file exported from Apple Health.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleFileUpload = async (provider: string, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -451,54 +526,71 @@ const Onboarding = () => {
                       </div>
                       
                       <div className="space-y-4">
-                        <h4 className="text-lg font-semibold text-slate-800">Enhance Your Experience</h4>
+                        <h4 className="text-lg font-semibold text-slate-800">Upload Apple Health Data</h4>
                         <p className="text-slate-600 leading-relaxed">
-                          Connect your Apple Health account to automatically sync your activity, heart rate, sleep, 
-                          and other health metrics. This helps us provide more personalized recommendations and track 
-                          your progress over time.
+                          Upload your Apple Health export (XML file) to get comprehensive health insights. 
+                          This includes activity, heart rate, sleep, body measurements, and more.
                         </p>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div className="space-y-2">
-                          <h5 className="font-medium text-slate-800">What we'll access:</h5>
+                          <h5 className="font-medium text-slate-800">Data included:</h5>
                           <ul className="space-y-1 text-slate-600">
-                            <li>• Activity & Exercise data</li>
+                            <li>• Activity & Exercise metrics</li>
                             <li>• Heart Rate & Variability</li>
-                            <li>• Sleep Analysis</li>
+                            <li>• Sleep Analysis & Trends</li>
                             <li>• Body Measurements</li>
+                            <li>• Nutrition & Hydration</li>
+                            <li>• Vital Signs</li>
                           </ul>
                         </div>
                         <div className="space-y-2">
                           <h5 className="font-medium text-slate-800">Benefits:</h5>
                           <ul className="space-y-1 text-slate-600">
-                            <li>• Real-time health tracking</li>
+                            <li>• Comprehensive health analysis</li>
+                            <li>• Trend identification</li>
                             <li>• Personalized insights</li>
-                            <li>• Progress monitoring</li>
-                            <li>• Data-driven recommendations</li>
+                            <li>• Progress tracking</li>
                           </ul>
                         </div>
                       </div>
 
-                      {formData.appleHealthConnected ? (
-                        <div className="p-4 bg-green-50/50 rounded-lg border border-green-200/30">
-                          <div className="flex items-center justify-center space-x-2 text-green-800">
-                            <Check className="w-5 h-5" />
-                            <span className="font-medium">Apple Health Connected Successfully!</span>
-                          </div>
-                          <p className="text-sm text-green-700 text-center mt-2">
-                            Your health data is now syncing with R42 Copilot.
-                          </p>
+                      <div className="space-y-4">
+                        <div className="text-sm text-slate-600">
+                          <strong>How to export:</strong> Health app → Profile → Export Health Data → Choose XML format
                         </div>
-                      ) : (
-                        <Button 
-                          onClick={handleAppleHealthConnect}
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-2"
-                        >
-                          <Apple className="w-4 h-4 mr-2" />
-                          Connect Apple Health
-                        </Button>
-                      )}
+                        
+                        <div className="flex items-center justify-center space-x-4">
+                          <input
+                            type="file"
+                            accept=".xml"
+                            onChange={(e) => handleAppleHealthUpload(e)}
+                            className="hidden"
+                            id="apple-health-upload"
+                          />
+                          <Button 
+                            variant="outline"
+                            onClick={() => document.getElementById('apple-health-upload')?.click()}
+                            className="border-green-300 bg-green-50/50 hover:bg-green-100/50"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload Apple Health XML
+                          </Button>
+                        </div>
+
+                        {formData.appleHealthData && (
+                          <div className="p-4 bg-green-50/50 rounded-lg border border-green-200/30">
+                            <div className="flex items-center justify-center space-x-2 text-green-800">
+                              <Check className="w-5 h-5" />
+                              <span className="font-medium">Apple Health Data Uploaded!</span>
+                            </div>
+                            <p className="text-sm text-green-700 text-center mt-2">
+                              {formData.appleHealthData.filename} - {formData.appleHealthData.recordCount} health records
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </Card>
 

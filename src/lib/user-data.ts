@@ -15,6 +15,7 @@ interface UserData {
     iollo: boolean;
   };
   appleHealthConnected: boolean;
+  appleHealthData?: any;
   researchConsent: boolean;
   neuroAgeData?: any;
   iolloData?: any;

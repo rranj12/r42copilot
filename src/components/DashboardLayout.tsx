@@ -41,6 +41,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   { name: "Jona Health Reports", href: "/jona-health", icon: Activity },
   { name: "NeuroAge Reports", href: "/neuroage", icon: Brain },
   { name: "Iollo Reports", href: "/iollo", icon: Activity },
+  { name: "Apple Health Data", href: "/apple-health", icon: Activity },
   { name: "Recommendations", href: "/recommendations", icon: Target },
   { name: "Progress", href: "/progress", icon: TrendingUp },
   { name: "Profile", href: "/profile", icon: User },
