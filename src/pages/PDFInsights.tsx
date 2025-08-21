@@ -31,7 +31,7 @@ interface PDFReport {
   filename: string;
   platform: string;
   uploadDate: Date;
-  status: 'processing' | 'completed' | 'error';
+  status: 'ready' | 'processing' | 'completed' | 'error';
   insights?: ReportInsights;
   pdfContent?: string;
 }
@@ -74,7 +74,7 @@ const PDFInsights = () => {
         filename: pdf.filename,
         platform: pdf.platform,
         uploadDate: new Date(pdf.uploadDate),
-        status: 'completed',
+        status: pdf.insights ? 'completed' : 'ready',
         pdfContent: pdf.content,
         insights: pdf.insights
       }));
@@ -417,30 +417,34 @@ const PDFInsights = () => {
                   <div className="flex items-center space-x-2">
                     {file.status === 'completed' && file.insights ? (
                       <Badge className="bg-green-100 text-green-800 border-green-200">Analyzed</Badge>
-                    ) : (
+                    ) : file.status === 'ready' ? (
                       <Badge className="bg-blue-100 text-blue-800 border-blue-200">Ready for Analysis</Badge>
+                    ) : file.status === 'processing' ? (
+                      <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Processing...</Badge>
+                    ) : (
+                      <Badge className="bg-red-100 text-red-800 border-red-200">Error</Badge>
                     )}
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        if (!file.insights) {
+                        if (file.status === 'ready' || !file.insights) {
                           // Trigger AI analysis for this PDF
                           analyzeExistingPDF(file);
                         }
                       }}
-                      disabled={file.status === 'processing'}
+                      disabled={file.status === 'processing' || file.status === 'completed'}
                     >
-                      {file.status === 'processing' ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : file.insights ? (
-                        'View Insights'
-                      ) : (
-                        'Analyze with AI'
-                      )}
+                                          {file.status === 'processing' ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : file.status === 'completed' && file.insights ? (
+                      'View Insights'
+                    ) : (
+                      'Analyze with AI'
+                    )}
                     </Button>
                   </div>
                 </div>
