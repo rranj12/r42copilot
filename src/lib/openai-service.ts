@@ -105,6 +105,13 @@ IMPORTANT RULES:
 5. Return ONLY the raw JSON object, no markdown, no code blocks, no additional text
 6. Ensure the JSON is valid and properly formatted
 
+ANALYSIS APPROACH:
+- Look for numbers followed by units (mg/L, %, ng/mL, etc.)
+- Search for common biomarker names (CRP, HbA1c, Vitamin D, etc.)
+- Identify any tables or structured data in the text
+- Look for reference ranges or normal values
+- Extract any trend information if multiple measurements exist
+
 Please analyze this ${request.platform} report and provide insights in the specified JSON format:
 
 Filename: ${request.filename}
@@ -117,6 +124,8 @@ Focus on:
 - Actionable lifestyle and supplement recommendations from the findings
 - Risk assessment based on actual results
 - Trend analysis if multiple measurements are available
+
+If the PDF content is limited or doesn't contain specific biomarker values, explain this in the summary and provide general recommendations based on the platform type.
 
 Return only the JSON response, no additional text.`
               }
@@ -381,6 +390,30 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
         }
         
         console.log(`Extracted ${text.length} characters from PDF`);
+        console.log('First 500 characters of extracted text:', text.substring(0, 500));
+        console.log('Last 500 characters of extracted text:', text.substring(Math.max(0, text.length - 500)));
+        
+        // Look for common biomarker patterns in the extracted text
+        const biomarkerPatterns = [
+          /CRP|C-reactive protein/gi,
+          /HbA1c|A1C|Hemoglobin A1c/gi,
+          /Vitamin D|Vit D|25-OH/gi,
+          /Cholesterol|HDL|LDL|Triglycerides/gi,
+          /Glucose|Blood Sugar|Fasting Glucose/gi,
+          /Creatinine|BUN|Urea/gi,
+          /ALT|AST|Liver Enzymes/gi,
+          /TSH|T4|T3|Thyroid/gi
+        ];
+        
+        let foundBiomarkers = 0;
+        biomarkerPatterns.forEach(pattern => {
+          if (pattern.test(text)) {
+            foundBiomarkers++;
+            console.log('Found biomarker pattern:', pattern.source);
+          }
+        });
+        
+        console.log(`Found ${foundBiomarkers} biomarker patterns in PDF`);
         
         if (!text || text.length < 100) {
           text = `PDF content extracted from ${file.name}. This PDF contains health and biomarker data that will be analyzed by AI.`;
