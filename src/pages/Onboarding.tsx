@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { setUserData } from "@/lib/user-data";
 import { generateNeuroAgeData, generateIolloData } from "@/lib/data-visualization";
+import { extractTextFromPDF } from "@/lib/openai-service";
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
@@ -27,8 +28,7 @@ const Onboarding = () => {
     healthGoals: "",
     currentSupplements: "",
     diagnosticData: {
-      exSeed: false,
-      genomeLink: false,
+      jonaHealth: false,
       neuroAge: false,
       iollo: false,
     },
@@ -87,39 +87,63 @@ const Onboarding = () => {
     });
   };
 
-  const handleFileUpload = (provider: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (provider: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-        // Generate data based on provider
-        if (provider === "NeuroAge") {
-          const neuroAgeData = generateNeuroAgeData(file.name);
+        try {
+          // Extract text from PDF
+          const text = await extractTextFromPDF(file);
+          
+          // Create PDF record
+          const pdfRecord = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            filename: file.name,
+            platform: provider,
+            uploadDate: new Date(),
+            content: text
+          };
+
+          // Store in form data
           setFormData(prev => ({
             ...prev,
-            neuroAgeData: neuroAgeData
+            uploadedPDFs: [...(prev.uploadedPDFs || []), pdfRecord]
           }));
+
+          // Generate data based on provider
+          if (provider === "NeuroAge") {
+            const neuroAgeData = generateNeuroAgeData(file.name);
+            setFormData(prev => ({
+              ...prev,
+              neuroAgeData: neuroAgeData
+            }));
+          } else if (provider === "Iollo") {
+            const iolloData = generateIolloData(file.name);
+            setFormData(prev => ({
+              ...prev,
+              iolloData: iolloData
+            }));
+          } else if (provider === "JonaHealth") {
+            setFormData(prev => ({
+              ...prev,
+              jonaHealthData: { filename: file.name, uploaded: true }
+            }));
+          }
+
           toast({
             title: `${provider} Results Uploaded!`,
-            description: `Data visualization generated from ${file.name}.`,
+            description: `PDF content extracted and stored for AI analysis.`,
           });
-        } else if (provider === "Iollo") {
-          const iolloData = generateIolloData(file.name);
-          setFormData(prev => ({
-            ...prev,
-            iolloData: iolloData
-          }));
+
+          console.log(`Uploading ${file.name} for ${provider}`);
+        } catch (error) {
+          console.error('Error processing PDF:', error);
           toast({
-            title: `${provider} Results Uploaded!`,
-            description: `Data visualization generated from ${file.name}.`,
-          });
-        } else {
-          toast({
-            title: `${provider} Results Uploaded!`,
-            description: `${file.name} has been successfully uploaded.`,
+            title: "PDF Processing Error",
+            description: "Failed to extract content from PDF. Please try again.",
+            variant: "destructive",
           });
         }
-        // Here you would typically send the file to your backend
-        console.log(`Uploading ${file.name} for ${provider}`);
       } else {
         toast({
           title: "Invalid File Type",
@@ -303,29 +327,29 @@ const Onboarding = () => {
                   <Card className="p-4 bg-white/20 border-white/30">
                     <div className="flex items-center space-x-3">
                       <Checkbox
-                        id="exSeed"
-                        checked={formData.diagnosticData.exSeed}
-                        onCheckedChange={(checked) => updateDiagnosticData("exSeed", checked)}
+                        id="jonaHealth"
+                        checked={formData.diagnosticData.jonaHealth}
+                        onCheckedChange={(checked) => updateDiagnosticData("jonaHealth", checked)}
                       />
                       <div>
-                        <Label htmlFor="exSeed" className="font-medium">ExSeed</Label>
-                        <p className="text-sm text-slate-600">Fertility Testing</p>
+                        <Label htmlFor="jonaHealth" className="font-medium">Jona Health</Label>
+                        <p className="text-sm text-slate-600">Comprehensive Health Optimization</p>
                       </div>
                     </div>
-                    {formData.diagnosticData.exSeed && (
+                    {formData.diagnosticData.jonaHealth && (
                       <div className="mt-3">
                         <input
                           type="file"
                           accept=".pdf"
-                          onChange={(e) => handleFileUpload("ExSeed", e)}
+                          onChange={(e) => handleFileUpload("JonaHealth", e)}
                           className="hidden"
-                          id="exSeed-upload"
+                          id="jonaHealth-upload"
                         />
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="w-full"
-                          onClick={() => document.getElementById('exSeed-upload')?.click()}
+                          onClick={() => document.getElementById('jonaHealth-upload')?.click()}
                         >
                           <Upload className="w-4 h-4 mr-2" />
                           Upload Results
@@ -334,39 +358,7 @@ const Onboarding = () => {
                     )}
                   </Card>
 
-                  <Card className="p-4 bg-white/20 border-white/30">
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="genomeLink"
-                        checked={formData.diagnosticData.genomeLink}
-                        onCheckedChange={(checked) => updateDiagnosticData("genomeLink", checked)}
-                      />
-                      <div>
-                        <Label htmlFor="genomeLink" className="font-medium">GenomeLink</Label>
-                        <p className="text-sm text-slate-600">Genomic Data</p>
-                      </div>
-                    </div>
-                    {formData.diagnosticData.genomeLink && (
-                      <div className="mt-3">
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) => handleFileUpload("GenomeLink", e)}
-                          className="hidden"
-                          id="genomeLink-upload"
-                        />
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full"
-                          onClick={() => document.getElementById('genomeLink-upload')?.click()}
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Upload Results
-                        </Button>
-                      </div>
-                    )}
-                  </Card>
+
 
                   <Card className="p-4 bg-white/20 border-white/30">
                     <div className="flex items-center space-x-3">

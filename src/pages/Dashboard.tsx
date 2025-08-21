@@ -237,11 +237,11 @@ const Dashboard = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                      <span className="text-blue-600 font-bold text-sm">E</span>
+                      <span className="text-blue-600 font-bold text-sm">J</span>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-800">ExSeed</h3>
-                      <p className="text-sm text-slate-600">Fertility Testing</p>
+                      <h3 className="font-semibold text-slate-800">Jona Health</h3>
+                      <p className="text-sm text-slate-600">Comprehensive Health Optimization</p>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -264,13 +264,7 @@ const Dashboard = () => {
               <Card className="bg-white/40 backdrop-blur-sm border-white/30">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
-                      <span className="text-green-600 font-bold text-sm">G</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-800">GenomeLink</h3>
-                      <p className="text-sm text-slate-600">Genomic Data</p>
-                    </div>
+
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between">
@@ -369,7 +363,7 @@ const Dashboard = () => {
                       <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
                       <div>
                         <h4 className="font-medium text-slate-800">Upload Additional Biomarkers</h4>
-                        <p className="text-sm text-slate-600">Complete your health profile with ExSeed and GenomeLink data</p>
+                        <p className="text-sm text-slate-600">Complete your health profile with Jona Health and other diagnostic data</p>
                         <Button 
                           variant="outline" 
                           size="sm" 

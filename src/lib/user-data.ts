@@ -10,8 +10,7 @@ interface UserData {
   healthGoals: string;
   currentSupplements: string;
   diagnosticData: {
-    exSeed: boolean;
-    genomeLink: boolean;
+    jonaHealth: boolean;
     neuroAge: boolean;
     iollo: boolean;
   };
@@ -19,6 +18,15 @@ interface UserData {
   researchConsent: boolean;
   neuroAgeData?: any;
   iolloData?: any;
+  jonaHealthData?: any;
+  uploadedPDFs?: {
+    id: string;
+    filename: string;
+    platform: string;
+    uploadDate: Date;
+    content: string;
+    insights?: any;
+  }[];
 }
 
 let userData: UserData | null = null;

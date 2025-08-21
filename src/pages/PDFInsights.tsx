@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import {
   Loader2
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { getUserData } from "@/lib/user-data";
 import { 
   analyzePDFContent, 
   extractTextFromPDF, 
@@ -63,6 +64,106 @@ const PDFInsights = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [processingProgress, setProcessingProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load existing PDFs from user data
+  useEffect(() => {
+    const userData = getUserData();
+    if (userData?.uploadedPDFs && userData.uploadedPDFs.length > 0) {
+      const existingPDFs: PDFReport[] = userData.uploadedPDFs.map(pdf => ({
+        id: pdf.id,
+        filename: pdf.filename,
+        platform: pdf.platform,
+        uploadDate: new Date(pdf.uploadDate),
+        status: 'completed',
+        pdfContent: pdf.content,
+        insights: pdf.insights
+      }));
+      setUploadedFiles(existingPDFs);
+    }
+  }, []);
+
+  // Function to analyze existing PDFs from setup
+  const analyzeExistingPDF = async (file: PDFReport) => {
+    if (!file.pdfContent) return;
+    
+    setIsProcessing(true);
+    setProcessingProgress(0);
+    
+    try {
+      setProcessingProgress(20);
+      
+      // Update status to processing
+      setUploadedFiles(prev => 
+        prev.map(f => f.id === file.id ? { ...f, status: 'processing' } : f)
+      );
+      
+      setProcessingProgress(40);
+      
+      const analysis = await analyzePDFContent({
+        content: file.pdfContent,
+        platform: file.platform,
+        filename: file.filename
+      });
+      
+      setProcessingProgress(80);
+      
+      // Convert Gemini response to our internal format
+      const insights: ReportInsights = {
+        summary: analysis.summary || 'Analysis completed successfully',
+        keyMetrics: Array.isArray(analysis.keyMetrics)
+          ? analysis.keyMetrics.map(metric => ({
+              name: metric?.name || 'Unknown Metric',
+              value: metric?.value || 'N/A',
+              status: metric?.status || 'normal',
+              description: metric?.description || 'No description available'
+            }))
+          : [],
+        recommendations: Array.isArray(analysis.recommendations)
+          ? analysis.recommendations
+          : ['Continue monitoring your health markers'],
+        riskFactors: Array.isArray(analysis.riskFactors)
+          ? analysis.riskFactors
+          : ['No specific risk factors identified'],
+        trends: Array.isArray(analysis.trends)
+          ? analysis.trends.map(trend => ({
+              metric: trend?.metric || 'Unknown',
+              direction: trend?.direction || 'stable',
+              change: trend?.change || 'No change',
+              period: trend?.period || 'Recent'
+            }))
+          : []
+      };
+      
+      setProcessingProgress(100);
+      
+      // Update the file with insights
+      setUploadedFiles(prev => 
+        prev.map(f => f.id === file.id ? { ...f, status: 'completed', insights } : f)
+      );
+      
+      toast({
+        title: "Analysis Complete!",
+        description: `${file.filename} has been analyzed with AI insights.`,
+      });
+      
+    } catch (error) {
+      console.error('Error analyzing existing PDF:', error);
+      
+      // Mark as error
+      setUploadedFiles(prev => 
+        prev.map(f => f.id === file.id ? { ...f, status: 'error' } : f)
+      );
+      
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+      setProcessingProgress(0);
+    }
+  };
 
   const platforms = [
     { name: 'NeuroAge', color: 'bg-blue-500', icon: Brain },
@@ -285,10 +386,69 @@ const PDFInsights = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-800">PDF Insights</h1>
           <p className="text-slate-600 mt-2">
-            Upload your longevity reports and get real AI-powered insights
+            AI-powered analysis of your uploaded longevity reports
           </p>
         </div>
       </div>
+
+      {/* Existing PDFs from Setup */}
+      {uploadedFiles.length > 0 && (
+        <Card className="bg-white/40 backdrop-blur-sm border-white/30">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <FileText className="w-5 h-5" />
+              <span>Reports from Setup</span>
+            </CardTitle>
+            <CardDescription>
+              These PDFs were uploaded during your profile setup and are ready for AI analysis
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {uploadedFiles.map((file) => (
+                <div key={file.id} className="flex items-center justify-between p-3 bg-white/20 rounded-lg border border-white/30">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="w-5 h-5 text-blue-500" />
+                    <div>
+                      <p className="font-medium text-slate-800">{file.filename}</p>
+                      <p className="text-sm text-slate-600">{file.platform} • {file.uploadDate.toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {file.status === 'completed' && file.insights ? (
+                      <Badge className="bg-green-100 text-green-800 border-green-200">Analyzed</Badge>
+                    ) : (
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">Ready for Analysis</Badge>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (!file.insights) {
+                          // Trigger AI analysis for this PDF
+                          analyzeExistingPDF(file);
+                        }
+                      }}
+                      disabled={file.status === 'processing'}
+                    >
+                      {file.status === 'processing' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Analyzing...
+                        </>
+                      ) : file.insights ? (
+                        'View Insights'
+                      ) : (
+                        'Analyze with AI'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Upload Section */}
       <Card>

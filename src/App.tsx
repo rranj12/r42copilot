@@ -9,6 +9,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import NeuroAge from "./pages/NeuroAge";
 import Iollo from "./pages/Iollo";
+import JonaHealth from "./pages/JonaHealth";
 import Retreat from "./pages/Retreat";
 import WellnessHub from "./pages/WellnessHub";
 import R42CoE from "./pages/R42CoE";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/neuroage" element={<NeuroAge />} />
         <Route path="/iollo" element={<Iollo />} />
+        <Route path="/jona-health" element={<JonaHealth />} />
         <Route path="/retreat" element={<Retreat />} />
         <Route path="/wellness-hub" element={<WellnessHub />} />
         <Route path="/r42-coe" element={<R42CoE />} />
