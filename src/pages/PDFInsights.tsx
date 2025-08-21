@@ -146,24 +146,40 @@ const PDFInsights = () => {
       
       console.log('Raw OpenAI analysis response:', analysis);
       console.log('Analysis keys:', Object.keys(analysis));
+      console.log('Analysis structure:', {
+        summary: typeof analysis.summary,
+        keyMetrics: Array.isArray(analysis.keyMetrics) ? 'Array' : typeof analysis.keyMetrics,
+        recommendations: Array.isArray(analysis.recommendations) ? 'Array' : typeof analysis.recommendations,
+        riskFactors: Array.isArray(analysis.riskFactors) ? 'Array' : typeof analysis.riskFactors,
+        trends: Array.isArray(analysis.trends) ? 'Array' : typeof analysis.trends,
+        trendsValue: analysis.trends
+      });
       
-      // Convert OpenAI response to our internal format with defensive checks
+      // Convert Gemini response to our internal format with defensive checks
       const insights: ReportInsights = {
         summary: analysis.summary || 'Analysis completed successfully',
-        keyMetrics: (analysis.keyMetrics || []).map(metric => ({
-          name: metric.name || 'Unknown Metric',
-          value: metric.value || 'N/A',
-          status: metric.status || 'normal',
-          description: metric.description || 'No description available'
-        })),
-        recommendations: analysis.recommendations || ['Continue monitoring your health markers'],
-        riskFactors: analysis.riskFactors || ['No specific risk factors identified'],
-        trends: (analysis.trends || []).map(trend => ({
-          metric: trend.metric || 'Unknown',
-          direction: trend.direction || 'stable',
-          change: trend.change || 'No change',
-          period: trend.period || 'Recent'
-        }))
+        keyMetrics: Array.isArray(analysis.keyMetrics) 
+          ? analysis.keyMetrics.map(metric => ({
+              name: metric?.name || 'Unknown Metric',
+              value: metric?.value || 'N/A',
+              status: metric?.status || 'normal',
+              description: metric?.description || 'No description available'
+            }))
+          : [],
+        recommendations: Array.isArray(analysis.recommendations) 
+          ? analysis.recommendations 
+          : ['Continue monitoring your health markers'],
+        riskFactors: Array.isArray(analysis.riskFactors) 
+          ? analysis.riskFactors 
+          : ['No specific risk factors identified'],
+        trends: Array.isArray(analysis.trends) 
+          ? analysis.trends.map(trend => ({
+              metric: trend?.metric || 'Unknown',
+              direction: trend?.direction || 'stable',
+              change: trend?.change || 'No change',
+              period: trend?.period || 'Recent'
+            }))
+          : []
       };
 
       setUploadedFiles(prev => 
