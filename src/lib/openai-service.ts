@@ -354,28 +354,64 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
         const arrayBuffer = event.target?.result as ArrayBuffer;
         const uint8Array = new Uint8Array(arrayBuffer);
         
-        // Smart text extraction with length limits
+        console.log(`PDF file size: ${file.size} bytes`);
+        console.log(`Array buffer size: ${arrayBuffer.byteLength} bytes`);
+        
+        // Enhanced text extraction with multiple strategies
         let text = '';
         let charCount = 0;
-        const maxChars = 200000; // Limit to ~50k tokens (Gemini can handle much more)
+        const maxChars = 200000;
         
-        // Look for readable text patterns that are likely to be actual content
+        // Strategy 1: Look for readable text patterns (improved)
         for (let i = 0; i < uint8Array.length && charCount < maxChars; i++) {
-          if (uint8Array[i] >= 32 && uint8Array[i] <= 126) { // Printable ASCII
+          // Include more character ranges for medical reports
+          if ((uint8Array[i] >= 32 && uint8Array[i] <= 126) || // Printable ASCII
+              (uint8Array[i] >= 160 && uint8Array[i] <= 255)) { // Extended ASCII (common in medical reports)
             text += String.fromCharCode(uint8Array[i]);
             charCount++;
           }
         }
         
-        // Clean up the text
+        // Strategy 2: Look for specific medical data patterns
+        const medicalPatterns = [
+          /[0-9]+\s*[a-zA-Z\/%]+/g, // Numbers with units (e.g., "5.2 mg/L", "120/80")
+          /[A-Z][a-z]+\s*[0-9]+/g,  // Words followed by numbers (e.g., "CRP 0.8")
+          /[0-9]+\s*[-–]\s*[0-9]+/g, // Ranges (e.g., "10-20", "5.2–6.0")
+        ];
+        
+        let foundPatterns = 0;
+        medicalPatterns.forEach(pattern => {
+          const matches = text.match(pattern);
+          if (matches) {
+            foundPatterns += matches.length;
+            console.log(`Found ${matches.length} matches for pattern ${pattern.source}:`, matches.slice(0, 5));
+          }
+        });
+        
+        // Strategy 3: Look for table-like structures
+        const tablePatterns = [
+          /\n\s*[A-Z][a-z]+\s+\d+\.?\d*\s+[a-zA-Z\/%]+\s*\n/g, // Table rows
+          /\n\s*\d+\.?\d*\s+[a-zA-Z\/%]+\s+[A-Z][a-z]+\s*\n/g, // Inverted table rows
+        ];
+        
+        let foundTables = 0;
+        tablePatterns.forEach(pattern => {
+          const matches = text.match(pattern);
+          if (matches) {
+            foundTables += matches.length;
+            console.log(`Found ${matches.length} table-like structures`);
+          }
+        });
+        
+        // Clean up the text more intelligently
         text = text
           .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-          .replace(/[^\x20-\x7E]/g, '') // Remove non-printable characters
+          .replace(/[^\x20-\x7E\xA0-\xFF]/g, '') // Keep extended ASCII characters
+          .replace(/(\d+\.?\d*)\s*([a-zA-Z\/%]+)/g, '$1 $2') // Ensure space between numbers and units
           .trim();
         
         // If we have too much text, truncate intelligently
         if (text.length > maxChars) {
-          // Try to find a good breaking point (end of sentence or word)
           const truncated = text.substring(0, maxChars);
           const lastPeriod = truncated.lastIndexOf('.');
           const lastSpace = truncated.lastIndexOf(' ');
@@ -393,7 +429,7 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
         console.log('First 500 characters of extracted text:', text.substring(0, 500));
         console.log('Last 500 characters of extracted text:', text.substring(Math.max(0, text.length - 500)));
         
-        // Look for common biomarker patterns in the extracted text
+        // Enhanced biomarker pattern detection
         const biomarkerPatterns = [
           /CRP|C-reactive protein/gi,
           /HbA1c|A1C|Hemoglobin A1c/gi,
@@ -402,7 +438,11 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
           /Glucose|Blood Sugar|Fasting Glucose/gi,
           /Creatinine|BUN|Urea/gi,
           /ALT|AST|Liver Enzymes/gi,
-          /TSH|T4|T3|Thyroid/gi
+          /TSH|T4|T3|Thyroid/gi,
+          /Testosterone|Estrogen|Progesterone/gi,
+          /Cortisol|DHEA/gi,
+          /Insulin|C-peptide/gi,
+          /Ferritin|Iron|TIBC/gi
         ];
         
         let foundBiomarkers = 0;
@@ -413,7 +453,16 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
           }
         });
         
-        console.log(`Found ${foundBiomarkers} biomarker patterns in PDF`);
+        console.log(`Found ${foundBiomarkers} biomarker patterns, ${foundPatterns} medical patterns, and ${foundTables} table structures`);
+        
+        // If no biomarkers found, try to extract any numerical data
+        if (foundBiomarkers === 0) {
+          const numberPattern = /(\d+\.?\d*)\s*([a-zA-Z\/%]+)/g;
+          const numbers = text.match(numberPattern);
+          if (numbers) {
+            console.log('Found numerical data patterns:', numbers.slice(0, 10));
+          }
+        }
         
         if (!text || text.length < 100) {
           text = `PDF content extracted from ${file.name}. This PDF contains health and biomarker data that will be analyzed by AI.`;
