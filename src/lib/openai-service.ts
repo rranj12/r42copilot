@@ -70,19 +70,40 @@ Platform Context:
 - Function Health: Metabolic health and functional medicine
 - TokuEyes: Eye health and retinal biomarkers
 
-Analysis Requirements:
-1. Provide a concise summary (2-3 sentences) based on the actual PDF content
-2. Identify 3-5 key metrics with their actual values, status, and descriptions from the report
-3. Generate 4-6 actionable recommendations based on the findings
-4. Highlight 2-3 risk factors or areas of concern from the data
-5. Identify trends if multiple measurements are available
-6. Use medical terminology appropriately but explain in accessible language
-7. Base ALL insights on the actual PDF content provided, not generic information
+CRITICAL: You MUST return a JSON object with EXACTLY this structure:
+{
+  "summary": "2-3 sentence summary based on actual PDF content",
+  "keyMetrics": [
+    {
+      "name": "Exact metric name from PDF (e.g., 'CRP', 'HbA1c', 'Vitamin D')",
+      "value": "Actual value from PDF (e.g., '0.8 mg/L', '5.2%', '32 ng/mL')",
+      "status": "normal/elevated/low/critical based on actual values",
+      "description": "What this metric means and its health implications"
+    }
+  ],
+  "recommendations": [
+    "Specific actionable recommendation based on actual findings"
+  ],
+  "riskFactors": [
+    "Specific risk factor identified from actual data"
+  ],
+  "trends": [
+    {
+      "metric": "Metric name",
+      "direction": "improving/declining/stable",
+      "change": "Specific change description",
+      "period": "Time period"
+    }
+  ]
+}
 
-IMPORTANT: 
-- Extract real values, metrics, and findings from the provided PDF text. Do not generate placeholder or generic information.
-- Return ONLY the raw JSON object, no markdown formatting, no code blocks, no additional text.
-- Ensure the JSON is valid and properly formatted.
+IMPORTANT RULES:
+1. Extract ONLY real values, metrics, and findings from the provided PDF text
+2. Do NOT generate placeholder or generic information
+3. If a metric is not clearly stated in the PDF, do NOT include it
+4. Use actual biomarker names and values from the PDF
+5. Return ONLY the raw JSON object, no markdown, no code blocks, no additional text
+6. Ensure the JSON is valid and properly formatted
 
 Please analyze this ${request.platform} report and provide insights in the specified JSON format:
 
@@ -153,6 +174,42 @@ Return only the JSON response, no additional text.`
       
       const parsed = JSON.parse(cleanResponse);
       console.log('Successfully parsed JSON:', parsed);
+      
+      // Validate the response structure
+      if (!parsed.summary || typeof parsed.summary !== 'string') {
+        console.error('Missing or invalid summary in AI response');
+        throw new GeminiError('AI response missing summary');
+      }
+      
+      if (!Array.isArray(parsed.keyMetrics) || parsed.keyMetrics.length === 0) {
+        console.error('Missing or invalid keyMetrics in AI response');
+        throw new GeminiError('AI response missing key metrics');
+      }
+      
+      // Validate each key metric has required fields
+      for (let i = 0; i < parsed.keyMetrics.length; i++) {
+        const metric = parsed.keyMetrics[i];
+        if (!metric.name || !metric.value || !metric.status || !metric.description) {
+          console.error(`Invalid key metric at index ${i}:`, metric);
+          throw new GeminiError(`AI response has invalid key metric structure at index ${i}`);
+        }
+        if (metric.name === 'Unknown Metric' || metric.value === 'N/A') {
+          console.error(`Generic metric detected at index ${i}:`, metric);
+          throw new GeminiError('AI response contains generic placeholder metrics instead of actual data');
+        }
+      }
+      
+      if (!Array.isArray(parsed.recommendations) || parsed.recommendations.length === 0) {
+        console.error('Missing or invalid recommendations in AI response');
+        throw new GeminiError('AI response missing recommendations');
+      }
+      
+      if (!Array.isArray(parsed.riskFactors) || parsed.riskFactors.length === 0) {
+        console.error('Missing or invalid riskFactors in AI response');
+        throw new GeminiError('AI response missing risk factors');
+      }
+      
+      console.log('AI response validation passed');
       return parsed;
     } catch (parseError) {
       console.error('=== JSON PARSE ERROR ===');
@@ -179,6 +236,90 @@ Return only the JSON response, no additional text.`
       }
       
       throw new GeminiError('Invalid response format from Gemini');
+    }
+
+    // If we get here, the response was invalid - try with a more specific prompt
+    console.log('First attempt failed, trying with more specific prompt...');
+    
+    try {
+      const retryResponse = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `You are analyzing a ${request.platform} health report. The PDF content is: ${request.content}
+
+You MUST return ONLY a JSON object with this EXACT structure - no other text:
+
+{
+  "summary": "Brief summary of the actual findings from the PDF",
+  "keyMetrics": [
+    {
+      "name": "CRP",
+      "value": "0.8 mg/L", 
+      "status": "normal",
+      "description": "C-reactive protein level indicating inflammation status"
+    }
+  ],
+  "recommendations": [
+    "Specific recommendation based on actual data"
+  ],
+  "riskFactors": [
+    "Specific risk identified from the data"
+  ],
+  "trends": [
+    {
+      "metric": "CRP",
+      "direction": "stable",
+      "change": "No significant change",
+      "period": "Recent"
+    }
+  ]
+}
+
+IMPORTANT: Only include metrics that are actually mentioned in the PDF text. If you cannot find specific values, do not make them up.`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 1500
+          }
+        })
+      });
+
+      if (!retryResponse.ok) {
+        throw new Error(`Retry failed: ${retryResponse.status}`);
+      }
+
+      const retryData = await retryResponse.json();
+      const retryAiResponse = retryData.candidates[0].content.parts[0].text;
+      
+      // Clean and parse retry response
+      let cleanRetryResponse = retryAiResponse.trim();
+      if (cleanRetryResponse.startsWith('```json')) {
+        cleanRetryResponse = cleanRetryResponse.substring(7);
+      }
+      if (cleanRetryResponse.startsWith('```')) {
+        cleanRetryResponse = cleanRetryResponse.substring(3);
+      }
+      if (cleanRetryResponse.endsWith('```')) {
+        cleanRetryResponse = cleanRetryResponse.substring(0, cleanRetryResponse.length - 3);
+      }
+      
+      const retryParsed = JSON.parse(cleanRetryResponse.trim());
+      console.log('Retry successful:', retryParsed);
+      return retryParsed;
+      
+    } catch (retryError) {
+      console.error('Retry attempt also failed:', retryError);
+      throw new GeminiError('Failed to get valid response from Gemini after retry');
     }
 
   } catch (error) {
