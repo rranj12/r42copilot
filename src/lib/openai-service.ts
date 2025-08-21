@@ -29,10 +29,10 @@ export interface Trend {
   significance: 'high' | 'medium' | 'low';
 }
 
-export class OpenAIError extends Error {
+export class GeminiError extends Error {
   constructor(message: string, public status?: number) {
     super(message);
-    this.name = 'OpenAIError';
+    this.name = 'GeminiError';
   }
 }
 
@@ -41,28 +41,27 @@ export const analyzePDFContent = async (request: PDFAnalysisRequest): Promise<PD
   console.log('Request:', request);
   
   try {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     console.log('API key available:', !!apiKey);
     console.log('API key length:', apiKey ? apiKey.length : 0);
     console.log('API key starts with:', apiKey ? apiKey.substring(0, 10) + '...' : 'NONE');
     
     if (!apiKey) {
-      throw new OpenAIError('OpenAI API key not found');
+      throw new GeminiError('Gemini API key not found');
     }
     
-    console.log('Making OpenAI API call...');
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log('Making Gemini API call...');
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
+        contents: [
           {
-            role: 'system',
-            content: `You are an expert longevity and healthspan analyst. Your task is to analyze PDF reports from various longevity platforms and provide concise, actionable insights based on the actual content.
+            parts: [
+              {
+                text: `You are an expert longevity and healthspan analyst. Your task is to analyze PDF reports from various longevity platforms and provide concise, actionable insights based on the actual content.
 
 Platform Context:
 - NeuroAge: Focuses on brain aging, cognitive biomarkers, and neurological health
@@ -83,11 +82,9 @@ Analysis Requirements:
 IMPORTANT: 
 - Extract real values, metrics, and findings from the provided PDF text. Do not generate placeholder or generic information.
 - Return ONLY the raw JSON object, no markdown formatting, no code blocks, no additional text.
-- Ensure the JSON is valid and properly formatted.`
-          },
-          {
-            role: 'user',
-            content: `Please analyze this ${request.platform} report and provide insights in the specified JSON format:
+- Ensure the JSON is valid and properly formatted.
+
+Please analyze this ${request.platform} report and provide insights in the specified JSON format:
 
 Filename: ${request.filename}
 Platform: ${request.platform}
@@ -101,10 +98,14 @@ Focus on:
 - Trend analysis if multiple measurements are available
 
 Return only the JSON response, no additional text.`
+              }
+            ]
           }
         ],
-        temperature: 0.3,
-        max_tokens: 2000
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2000
+        }
       })
     });
 
@@ -113,20 +114,20 @@ Return only the JSON response, no additional text.`
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error response:', errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+      console.error('Gemini API error response:', errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     console.log('Parsing response JSON...');
     const data = await response.json();
-    console.log('OpenAI response:', data);
+    console.log('Gemini response:', data);
     
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid OpenAI response structure:', data);
-      throw new Error('Invalid response format from OpenAI API');
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
+      console.error('Invalid Gemini response structure:', data);
+      throw new Error('Invalid response format from Gemini API');
     }
     
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.candidates[0].content.parts[0].text;
     console.log('AI response content length:', aiResponse.length);
     console.log('AI response content (first 500 chars):', aiResponse.substring(0, 500));
     const last500Start = Math.max(0, aiResponse.length - 500);
@@ -177,7 +178,7 @@ Return only the JSON response, no additional text.`
         }
       }
       
-      throw new OpenAIError('Invalid response format from OpenAI');
+      throw new GeminiError('Invalid response format from Gemini');
     }
 
   } catch (error) {
@@ -187,10 +188,10 @@ Return only the JSON response, no additional text.`
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
     console.error('Full error object:', error);
     
-    if (error instanceof OpenAIError) {
+    if (error instanceof GeminiError) {
       throw error;
     }
-    throw new OpenAIError('Failed to analyze PDF content');
+    throw new GeminiError('Failed to analyze PDF content');
   }
 };
 
