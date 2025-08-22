@@ -208,18 +208,35 @@ export const formatHeight = (heightInches: number | string): string => {
   return '';
 };
 
-export const parseHeight = (heightString: string): number => {
-  // Handle feet'inches format (e.g., "5'11"")
-  const match = heightString.match(/(\d+)'(\d+)"/);
-  if (match) {
-    const feet = parseInt(match[1]);
-    const inches = parseInt(match[2]);
-    return feet * 12 + inches;
+export const parseHeight = (heightString: string | number): number => {
+  try {
+    // Handle empty or undefined values
+    if (!heightString || heightString === '') {
+      return 0;
+    }
+    
+    // If it's already a number, return it
+    if (typeof heightString === 'number') {
+      return heightString;
+    }
+    
+    // Handle feet'inches format (e.g., "5'11"")
+    const match = heightString.match(/(\d+)'(\d+)"/);
+    if (match) {
+      const feet = parseInt(match[1]);
+      const inches = parseInt(match[2]);
+      if (!isNaN(feet) && !isNaN(inches)) {
+        return feet * 12 + inches;
+      }
+    }
+    
+    // Handle just inches
+    const inches = parseInt(heightString);
+    return isNaN(inches) ? 0 : inches;
+  } catch (error) {
+    console.error('Error parsing height:', error, heightString);
+    return 0;
   }
-  
-  // Handle just inches
-  const inches = parseInt(heightString);
-  return isNaN(inches) ? 0 : inches;
 };
 
 export const clearStorageIfNeeded = () => {

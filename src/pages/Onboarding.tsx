@@ -373,11 +373,32 @@ const Onboarding = () => {
                       type="number"
                       min="0"
                       max="8"
-                      value={Math.floor(parseHeight(formData.height) / 12) || ''}
+                      value={(() => {
+                        try {
+                          const heightInches = parseHeight(formData.height || '0');
+                          return heightInches > 0 ? Math.floor(heightInches / 12) : '';
+                        } catch {
+                          return '';
+                        }
+                      })()}
                       onChange={(e) => {
+                        try {
+                          const feet = parseInt(e.target.value) || 0;
+                          const currentHeight = parseHeight(formData.height || '0');
+                          const inches = currentHeight > 0 ? currentHeight % 12 : 0;
+                          const newHeight = feet * 12 + inches;
+                          if (newHeight >= 0 && newHeight <= 96) { // Max 8 feet
+                            updateFormData("height", newHeight);
+                          }
+                        } catch (error) {
+                          console.error('Error updating feet:', error);
+                        }
+                      }}
+                      onBlur={(e) => {
+                        // Ensure valid range on blur
                         const feet = parseInt(e.target.value) || 0;
-                        const inches = parseHeight(formData.height) % 12;
-                        updateFormData("height", feet * 12 + inches);
+                        if (feet < 0) e.target.value = '0';
+                        if (feet > 8) e.target.value = '8';
                       }}
                       placeholder="Feet"
                       className="bg-white/50 border-white/30 w-20"
@@ -388,11 +409,36 @@ const Onboarding = () => {
                       type="number"
                       min="0"
                       max="11"
-                      value={parseHeight(formData.height) % 12 || ''}
+                      value={(() => {
+                        try {
+                          const heightInches = parseHeight(formData.height || '0');
+                          return heightInches > 0 ? heightInches % 12 : '';
+                        } catch {
+                          return '';
+                        }
+                      })()}
                       onChange={(e) => {
-                        const feet = Math.floor(parseHeight(formData.height) / 12);
+                        try {
+                          const feet = Math.floor(parseHeight(formData.height || '0') / 12);
+                          const inches = parseInt(e.target.value) || 0;
+                          const newHeight = feet * 12 + inches;
+                          if (newHeight >= 0 && newHeight <= 96) { // Max 8 feet
+                            updateFormData("height", newHeight);
+                          }
+                        } catch (error) {
+                          console.error('Error updating inches:', error);
+                        }
+                      }}
+                      onBlur={(e) => {
+                        // Ensure valid range on blur
+                        const feet = Math.floor(parseHeight(formData.height || '0') / 12);
                         const inches = parseInt(e.target.value) || 0;
-                        updateFormData("height", feet * 12 + inches);
+                        const totalHeight = feet * 12 + inches;
+                        if (totalHeight > 96) { // If total exceeds 8 feet, adjust inches
+                          const maxInches = 96 - (feet * 12);
+                          e.target.value = Math.max(0, maxInches).toString();
+                          updateFormData("height", feet * 12 + maxInches);
+                        }
                       }}
                       placeholder="Inches"
                       className="bg-white/50 border-white/30 w-20"
