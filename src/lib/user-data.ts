@@ -154,6 +154,16 @@ export const getUploadedPDFsCount = (): number => {
   return data?.uploadedPDFs ? data.uploadedPDFs.length : 0;
 };
 
+export const getUploadedPDFs = () => {
+  const data = getUserData();
+  return data?.uploadedPDFs || [];
+};
+
+export const getPDFsByPlatform = (platform: string) => {
+  const data = getUserData();
+  return data?.uploadedPDFs?.filter(pdf => pdf.platform === platform) || [];
+};
+
 export const addUploadedPDF = (pdfData: {
   id: string;
   filename: string;
