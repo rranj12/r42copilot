@@ -95,16 +95,29 @@ const AppleHealth = () => {
         summary: `Analysis of ${recordCount} health records from Apple Health data`,
         keyMetrics: [
           {
-            name: "Heart Rate",
+            name: "Resting Heart Rate",
             value: `${healthSummary.heartRate.average.toFixed(1)} BPM`,
-            status: healthSummary.heartRate.average > 100 ? 'elevated' : 'normal',
-            description: `Average heart rate from ${healthSummary.heartRate.count} measurements`
+            status: healthSummary.heartRate.average > 100 ? 'elevated' : 
+                    healthSummary.heartRate.average < 60 ? 'low' : 'normal',
+            description: `Average resting heart rate from ${healthSummary.heartRate.count} measurements`
           },
           {
             name: "Daily Steps",
             value: `${Math.round(healthSummary.steps.total / Math.max(healthSummary.steps.count, 1))} steps`,
-            status: 'normal',
+            status: Math.round(healthSummary.steps.total / Math.max(healthSummary.steps.count, 1)) < 10000 ? 'low' : 'normal',
             description: `Average daily step count over ${healthSummary.steps.count} days`
+          },
+          {
+            name: "Sleep Records",
+            value: `${healthSummary.sleep.count} nights`,
+            status: healthSummary.sleep.count < 7 ? 'low' : 'normal',
+            description: `Sleep tracking data available`
+          },
+          {
+            name: "Activity Energy",
+            value: `${Math.round(healthSummary.activity.total / Math.max(healthSummary.activity.count, 1))} kcal`,
+            status: Math.round(healthSummary.activity.total / Math.max(healthSummary.activity.count, 1)) < 300 ? 'low' : 'normal',
+            description: `Average daily active energy burned`
           },
           {
             name: "Weight Trend",
@@ -120,22 +133,58 @@ const AppleHealth = () => {
           "Consider heart rate variability for stress management"
         ],
         riskFactors: [
-          healthSummary.heartRate.average > 100 ? "Elevated resting heart rate - consider stress management" : "Heart rate within normal range",
-          healthSummary.steps.total < 10000 ? "Low step count - aim for 10,000+ daily steps" : "Good daily activity level maintained"
+          // Heart Rate Variability (HRV) - important Apple Watch metric
+          healthSummary.heartRate.count > 10 ? 
+            (healthSummary.heartRate.average > 100 ? 
+              "Elevated resting heart rate (>100 BPM) - may indicate stress, poor sleep, or cardiovascular strain" : 
+              "Resting heart rate within normal range (60-100 BPM)"
+            ) : 
+            "Insufficient heart rate data for risk assessment",
+          
+          // Irregular Heart Rhythm detection
+          healthSummary.heartRate.count > 20 ? 
+            "Monitor for irregular heart rhythm patterns - Apple Watch can detect AFib" : 
+            "Continue monitoring heart rhythm for irregular patterns",
+          
+          // Low HRV (Heart Rate Variability)
+          "Low heart rate variability may indicate high stress levels or poor recovery",
+          
+          // Sleep quality impact
+          healthSummary.sleep.count > 7 ? 
+            "Sleep patterns may affect heart health and recovery" : 
+            "Insufficient sleep data for cardiovascular risk assessment",
+          
+          // Activity level cardiovascular risk
+          healthSummary.steps.total < 10000 ? 
+            "Low daily step count (<10,000) - increases cardiovascular disease risk" : 
+            "Adequate daily activity level maintained for heart health"
         ],
         trends: [
           {
-            metric: "Heart Rate",
+            metric: "Heart Rate Trend",
             direction: healthSummary.heartRate.recent.length > 1 ? 
-              (healthSummary.heartRate.recent[healthSummary.heartRate.recent.length - 1].value > healthSummary.heartRate.recent[0].value ? 'declining' : 'improving') : 'stable',
-            change: "Recent measurements show trend",
+              (healthSummary.heartRate.recent[healthSummary.heartRate.recent.length - 1].value > healthSummary.heartRate.recent[0].value ? 'increasing' : 'decreasing') : 'stable',
+            change: healthSummary.heartRate.recent.length > 1 ? 
+              `From ${healthSummary.heartRate.recent[0].value} to ${healthSummary.heartRate.recent[healthSummary.heartRate.recent.length - 1].value} BPM` : 
+              "Insufficient data for trend analysis",
             period: "Last 5 measurements"
           },
           {
-            metric: "Activity Level",
-            direction: "stable",
-            change: "Consistent daily energy burn",
-            period: "Weekly average"
+            metric: "Daily Activity",
+            direction: healthSummary.steps.recent.length > 1 ? 
+              (healthSummary.steps.recent[healthSummary.steps.recent.length - 1].value > healthSummary.steps.recent[0].value ? 'improving' : 'declining') : 'stable',
+            change: healthSummary.steps.recent.length > 1 ? 
+              `Step count ${healthSummary.steps.recent[healthSummary.steps.recent.length - 1].value > healthSummary.steps.recent[0].value ? 'increased' : 'decreased'} over time` : 
+              "Consistent daily activity",
+            period: "Last 7 days"
+          },
+          {
+            metric: "Sleep Consistency",
+            direction: healthSummary.sleep.count > 7 ? 'stable' : 'insufficient',
+            change: healthSummary.sleep.count > 7 ? 
+              `${healthSummary.sleep.count} nights of sleep data available` : 
+              "Need more sleep tracking data",
+            period: "Sleep tracking period"
           }
         ]
       };

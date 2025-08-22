@@ -14,22 +14,21 @@ import {
   RefreshCw
 } from "lucide-react";
 import R42Logo from "@/components/ui/r42-logo";
-import { getUserName, getUserData } from "@/lib/user-data";
-import { 
-  getCognitiveChartData, 
-  getBrainHealthChartData, 
-  getTrendChartData, 
-  getOverallScoreData 
-} from "@/lib/data-visualization";
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import { getUserName, getUserData, getPDFsByPlatform } from "@/lib/user-data";
+
 import { useNavigate } from "react-router-dom";
 
 const NeuroAge = () => {
   const navigate = useNavigate();
   const userData = getUserData();
-  const neuroAgeData = userData?.neuroAgeData;
+  
+  // Get real NeuroAge PDF data instead of fake data
+  const neuroAgePDFs = getPDFsByPlatform('NeuroAge');
+  const hasNeuroAgeData = neuroAgePDFs.length > 0;
+  const latestNeuroAgePDF = neuroAgePDFs[0];
+  const neuroAgeInsights = latestNeuroAgePDF?.insights;
 
-  if (!neuroAgeData) {
+  if (!hasNeuroAgeData) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -85,103 +84,138 @@ const NeuroAge = () => {
           <div className="flex items-center space-x-3">
             <R42Logo size="sm" />
             <div>
-              <h3 className="text-lg font-semibold text-slate-800">NeuroAge Multi-Modal Analysis</h3>
-              <p className="text-sm text-slate-600">Comprehensive cognitive and brain health assessment</p>
+                          <h3 className="text-lg font-semibold text-slate-800">NeuroAge Report Analysis</h3>
+            <p className="text-sm text-slate-600">AI-powered insights from your uploaded NeuroAge PDF</p>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-white/50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{neuroAgeData.cognitiveScore}</div>
-              <div className="text-sm text-slate-600">Cognitive Score</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {neuroAgeInsights?.keyMetrics?.length || 0}
+              </div>
+              <div className="text-sm text-slate-600">Key Metrics Found</div>
             </div>
             <div className="text-center p-4 bg-white/50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{neuroAgeData.brainAge}</div>
-              <div className="text-sm text-slate-600">Brain Age</div>
+              <div className="text-2xl font-bold text-green-600">
+                {neuroAgeInsights?.recommendations?.length || 0}
+              </div>
+              <div className="text-sm text-slate-600">AI Recommendations</div>
             </div>
             <div className="text-center p-4 bg-white/50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{neuroAgeData.dataQuality}%</div>
-              <div className="text-sm text-slate-600">Data Quality</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {neuroAgeInsights?.riskFactors?.length || 0}
+              </div>
+              <div className="text-sm text-slate-600">Risk Factors</div>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Data Visualizations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Cognitive Performance</h3>
-          <div className="h-64">
-            <Bar 
-              data={getCognitiveChartData(neuroAgeData)}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    max: 100,
-                  },
-                },
-              }}
-            />
-          </div>
-        </Card>
+      {/* Real Data Display */}
+      {neuroAgeInsights ? (
+        <div className="space-y-6">
+          {/* AI Summary */}
+          <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
+            <h3 className="text-lg font-semibold text-slate-800 mb-4">AI Analysis Summary</h3>
+            <p className="text-slate-600">{neuroAgeInsights.summary}</p>
+          </Card>
 
-        <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Brain Health Metrics</h3>
-          <div className="h-64">
-            <Bar 
-              data={getBrainHealthChartData(neuroAgeData)}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    max: 100,
-                  },
-                },
-              }}
-            />
-          </div>
-        </Card>
-      </div>
+          {/* Key Metrics */}
+          {neuroAgeInsights.keyMetrics && neuroAgeInsights.keyMetrics.length > 0 && (
+            <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Key Metrics from Report</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {neuroAgeInsights.keyMetrics.map((metric: any, index: number) => (
+                  <div key={index} className="p-4 bg-slate-50 rounded-lg border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-slate-700">{metric.name}</span>
+                      <Badge 
+                        className={
+                          metric.status === 'normal' ? 'bg-green-100 text-green-800' :
+                          metric.status === 'elevated' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }
+                      >
+                        {metric.value}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600">{metric.description}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
-      {/* Trends Chart */}
-      <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">6-Month Trends</h3>
-        <div className="h-64">
-          <Line 
-            data={getTrendChartData(neuroAgeData)}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  position: 'top' as const,
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  max: 100,
-                },
-              },
-            }}
-          />
+          {/* Recommendations */}
+          {neuroAgeInsights.recommendations && neuroAgeInsights.recommendations.length > 0 && (
+            <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">AI Recommendations</h3>
+              <div className="space-y-3">
+                {neuroAgeInsights.recommendations.map((rec: string, index: number) => (
+                  <div key={index} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" />
+                    <span className="text-slate-700">{rec}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Risk Factors */}
+          {neuroAgeInsights.riskFactors && neuroAgeInsights.riskFactors.length > 0 && (
+            <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Risk Factors Identified</h3>
+              <div className="space-y-3">
+                {neuroAgeInsights.riskFactors.map((risk: string, index: number) => (
+                  <div key={index} className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                    <AlertCircle className="w-5 h-5 text-red-600 mt-1 flex-shrink-0" />
+                    <span className="text-slate-700">{risk}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Trends */}
+          {neuroAgeInsights.trends && neuroAgeInsights.trends.length > 0 && (
+            <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Trends Analysis</h3>
+              <div className="space-y-3">
+                {neuroAgeInsights.trends.map((trend: any, index: number) => (
+                  <div key={index} className="p-3 bg-slate-50 rounded-lg border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-slate-700">{trend.metric}</span>
+                      <Badge 
+                        className={
+                          trend.direction === 'improving' ? 'bg-green-100 text-green-800' :
+                          trend.direction === 'declining' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }
+                      >
+                        {trend.direction}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600">{trend.change}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
-      </Card>
+      ) : (
+        <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
+              <RefreshCw className="w-8 h-8 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800">Analysis in Progress</h3>
+            <p className="text-slate-600">
+              Your NeuroAge report is being analyzed by AI. Check back soon for detailed insights.
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Overall Score Distribution */}
       <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
