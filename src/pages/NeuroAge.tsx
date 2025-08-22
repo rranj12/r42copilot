@@ -26,6 +26,8 @@ const NeuroAge = () => {
   const [latestNeuroAgePDF, setLatestNeuroAgePDF] = useState<any>(null);
   const [neuroAgeInsights, setNeuroAgeInsights] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Load data on component mount and when component becomes visible
   useEffect(() => {
@@ -50,6 +52,9 @@ const NeuroAge = () => {
         }
       } catch (error) {
         console.error('Error loading NeuroAge data:', error);
+        setHasError(true);
+        setErrorMessage('Failed to load NeuroAge data. Please try refreshing the page.');
+        
         // If there's an error, try to clear localStorage and retry once
         try {
           clearLocalStorageIfNeeded();
@@ -65,9 +70,12 @@ const NeuroAge = () => {
           if (hasData) {
             setLatestNeuroAgePDF(pdfs[0]);
             setNeuroAgeInsights(pdfs[0]?.insights);
+            setHasError(false); // Clear error if retry succeeds
+            setErrorMessage('');
           }
         } catch (retryError) {
           console.error('Retry failed:', retryError);
+          setErrorMessage('Unable to load data. Please check your browser storage or try again later.');
         }
       } finally {
         setIsLoading(false);
@@ -110,6 +118,74 @@ const NeuroAge = () => {
             <p className="text-slate-600">
               Please wait while we load your health data...
             </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state if data loading failed
+  if (hasError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800">NeuroAge Reports</h1>
+            <p className="text-slate-600 mt-2">Error loading your cognitive and brain health analysis</p>
+          </div>
+        </div>
+
+        <Card className="p-8 bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-800">Error Loading Data</h3>
+            <p className="text-slate-600 mb-4">
+              {errorMessage}
+            </p>
+            <div className="flex space-x-3 justify-center">
+              <Button 
+                onClick={() => {
+                  setHasError(false);
+                  setErrorMessage('');
+                  setIsLoading(true);
+                  // Reload data
+                  const loadData = () => {
+                    try {
+                      clearLocalStorageIfNeeded();
+                      const data = getUserData();
+                      setUserData(data);
+                      const pdfs = getPDFsByPlatform('NeuroAge');
+                      setNeuroAgePDFs(pdfs);
+                      setHasNeuroAgeData(pdfs.length > 0);
+                      if (pdfs.length > 0) {
+                        setLatestNeuroAgePDF(pdfs[0]);
+                        setNeuroAgeInsights(pdfs[0]?.insights);
+                      }
+                    } catch (error) {
+                      console.error('Reload failed:', error);
+                      setHasError(true);
+                      setErrorMessage('Reload failed. Please try again.');
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  };
+                  loadData();
+                }}
+                className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/onboarding')}
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                Go to Onboarding
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
