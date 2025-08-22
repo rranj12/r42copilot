@@ -87,8 +87,28 @@ export const setUserData = (data: UserData) => {
       console.log('Essential user data saved to localStorage (large files excluded)');
     } catch (fallbackError) {
       console.error('Failed to save even essential data:', fallbackError);
-      // At least keep it in memory
-      console.log('User data kept in memory only');
+      
+      // Try one more time with minimal data
+      try {
+        const minimalData = {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          uploadedPDFs: data.uploadedPDFs ? data.uploadedPDFs.map(pdf => ({
+            id: pdf.id,
+            filename: pdf.filename,
+            platform: pdf.platform,
+            uploadDate: pdf.uploadDate,
+            insights: pdf.insights
+          })) : undefined
+        };
+        
+        localStorage.setItem('r42-user-data', JSON.stringify(minimalData));
+        console.log('Minimal user data saved to localStorage');
+      } catch (minimalError) {
+        console.error('Failed to save even minimal data:', minimalError);
+        console.log('User data kept in memory only - localStorage completely full');
+      }
     }
   }
 };
@@ -102,22 +122,46 @@ const compressUserData = (data: UserData): string => {
       filename: data.appleHealthData.filename,
       recordCount: data.appleHealthData.recordCount,
       healthMetrics: data.appleHealthData.healthMetrics,
-      // Store only first 1000 chars of raw XML for analysis
-      rawXml: data.appleHealthData.rawXml ? data.appleHealthData.rawXml.substring(0, 1000) : undefined
+      // Store only first 500 chars of raw XML for analysis
+      rawXml: data.appleHealthData.rawXml ? data.appleHealthData.rawXml.substring(0, 500) : undefined
     } : undefined,
     uploadedPDFs: data.uploadedPDFs ? data.uploadedPDFs.map(pdf => ({
       ...pdf,
-      // Store only first 2000 chars of PDF content
-      content: pdf.content ? pdf.content.substring(0, 2000) : undefined
+      // Store only first 1000 chars of PDF content
+      content: pdf.content ? pdf.content.substring(0, 1000) : undefined
     })) : undefined
   };
   
   const jsonString = JSON.stringify(compressedData);
   console.log(`Compressed data size: ${jsonString.length} characters`);
   
-  // Check if it's still too large
-  if (jsonString.length > 5000000) { // 5MB limit
-    throw new Error('Data too large even after compression');
+  // Check if it's still too large - reduce to 1MB limit
+  if (jsonString.length > 1000000) { // 1MB limit
+    // Further compress by removing more data
+    const ultraCompressedData = {
+      ...compressedData,
+      appleHealthData: compressedData.appleHealthData ? {
+        filename: compressedData.appleHealthData.filename,
+        recordCount: compressedData.appleHealthData.recordCount,
+        healthMetrics: compressedData.appleHealthData.healthMetrics,
+        // Remove raw XML entirely
+        rawXml: undefined
+      } : undefined,
+      uploadedPDFs: compressedData.uploadedPDFs ? compressedData.uploadedPDFs.map(pdf => ({
+        ...pdf,
+        // Store only first 500 chars of PDF content
+        content: pdf.content ? pdf.content.substring(0, 500) : undefined
+      })) : undefined
+    };
+    
+    const ultraJsonString = JSON.stringify(ultraCompressedData);
+    console.log(`Ultra-compressed data size: ${ultraJsonString.length} characters`);
+    
+    if (ultraJsonString.length > 1000000) {
+      throw new Error('Data too large even after ultra-compression');
+    }
+    
+    return ultraJsonString;
   }
   
   return jsonString;
@@ -160,8 +204,30 @@ export const getUploadedPDFs = () => {
 };
 
 export const getPDFsByPlatform = (platform: string) => {
-  const data = getUserData();
-  return data?.uploadedPDFs?.filter(pdf => pdf.platform === platform) || [];
+  try {
+    const data = getUserData();
+    return data?.uploadedPDFs?.filter(pdf => pdf.platform === platform) || [];
+  } catch (error) {
+    console.error(`Error getting PDFs for platform ${platform}:`, error);
+    return [];
+  }
+};
+
+// Clear localStorage if it's getting too full
+export const clearLocalStorageIfNeeded = () => {
+  try {
+    const currentData = localStorage.getItem('r42-user-data');
+    if (currentData && currentData.length > 800000) { // 800KB threshold
+      console.warn('localStorage getting full, clearing old data...');
+      localStorage.removeItem('r42-user-data');
+      console.log('localStorage cleared to prevent quota errors');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking localStorage size:', error);
+    return false;
+  }
 };
 
 export const addUploadedPDF = (pdfData: {

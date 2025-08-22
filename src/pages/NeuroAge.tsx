@@ -14,7 +14,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import R42Logo from "@/components/ui/r42-logo";
-import { getUserName, getUserData, getPDFsByPlatform } from "@/lib/user-data";
+import { getUserName, getUserData, getPDFsByPlatform, clearLocalStorageIfNeeded } from "@/lib/user-data";
 
 import { useNavigate } from "react-router-dom";
 
@@ -32,6 +32,9 @@ const NeuroAge = () => {
     const loadData = () => {
       setIsLoading(true);
       try {
+        // Check if localStorage needs clearing
+        clearLocalStorageIfNeeded();
+        
         const data = getUserData();
         setUserData(data);
         
@@ -47,6 +50,25 @@ const NeuroAge = () => {
         }
       } catch (error) {
         console.error('Error loading NeuroAge data:', error);
+        // If there's an error, try to clear localStorage and retry once
+        try {
+          clearLocalStorageIfNeeded();
+          const data = getUserData();
+          setUserData(data);
+          
+          const pdfs = getPDFsByPlatform('NeuroAge');
+          setNeuroAgePDFs(pdfs);
+          
+          const hasData = pdfs.length > 0;
+          setHasNeuroAgeData(hasData);
+          
+          if (hasData) {
+            setLatestNeuroAgePDF(pdfs[0]);
+            setNeuroAgeInsights(pdfs[0]?.insights);
+          }
+        } catch (retryError) {
+          console.error('Retry failed:', retryError);
+        }
       } finally {
         setIsLoading(false);
       }
