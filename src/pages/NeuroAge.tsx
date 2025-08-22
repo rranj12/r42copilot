@@ -20,13 +20,79 @@ import { useNavigate } from "react-router-dom";
 
 const NeuroAge = () => {
   const navigate = useNavigate();
-  const userData = getUserData();
-  
-  // Get real NeuroAge PDF data instead of fake data
-  const neuroAgePDFs = getPDFsByPlatform('NeuroAge');
-  const hasNeuroAgeData = neuroAgePDFs.length > 0;
-  const latestNeuroAgePDF = neuroAgePDFs[0];
-  const neuroAgeInsights = latestNeuroAgePDF?.insights;
+  const [userData, setUserData] = useState<any>(null);
+  const [neuroAgePDFs, setNeuroAgePDFs] = useState<any[]>([]);
+  const [hasNeuroAgeData, setHasNeuroAgeData] = useState(false);
+  const [latestNeuroAgePDF, setLatestNeuroAgePDF] = useState<any>(null);
+  const [neuroAgeInsights, setNeuroAgeInsights] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load data on component mount and when component becomes visible
+  useEffect(() => {
+    const loadData = () => {
+      setIsLoading(true);
+      try {
+        const data = getUserData();
+        setUserData(data);
+        
+        const pdfs = getPDFsByPlatform('NeuroAge');
+        setNeuroAgePDFs(pdfs);
+        
+        const hasData = pdfs.length > 0;
+        setHasNeuroAgeData(hasData);
+        
+        if (hasData) {
+          setLatestNeuroAgePDF(pdfs[0]);
+          setNeuroAgeInsights(pdfs[0]?.insights);
+        }
+      } catch (error) {
+        console.error('Error loading NeuroAge data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+    
+    // Add event listener for when page becomes visible again
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Show loading state while data is being fetched
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800">NeuroAge Reports</h1>
+            <p className="text-slate-600 mt-2">Loading your cognitive and brain health analysis...</p>
+          </div>
+        </div>
+
+        <Card className="p-8 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto animate-spin">
+              <RefreshCw className="w-8 h-8 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-800">Loading NeuroAge Data</h3>
+            <p className="text-slate-600">
+              Please wait while we load your health data...
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   if (!hasNeuroAgeData) {
     return (
@@ -67,6 +133,26 @@ const NeuroAge = () => {
           <p className="text-slate-600 mt-2">Cognitive and brain health analysis for {getUserName()}</p>
         </div>
         <div className="flex space-x-3">
+          <Button 
+            variant="outline" 
+            className="border-white/30 bg-white/20 backdrop-blur-sm"
+            onClick={() => {
+              setIsLoading(true);
+              const data = getUserData();
+              setUserData(data);
+              const pdfs = getPDFsByPlatform('NeuroAge');
+              setNeuroAgePDFs(pdfs);
+              setHasNeuroAgeData(pdfs.length > 0);
+              if (pdfs.length > 0) {
+                setLatestNeuroAgePDF(pdfs[0]);
+                setNeuroAgeInsights(pdfs[0]?.insights);
+              }
+              setIsLoading(false);
+            }}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
           <Button variant="outline" className="border-white/30 bg-white/20 backdrop-blur-sm">
             <Download className="w-4 h-4 mr-2" />
             Export Report
