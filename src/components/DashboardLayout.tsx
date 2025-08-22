@@ -69,7 +69,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="flex flex-col h-full bg-white/30 backdrop-blur-sm border-r border-white/20">
           {/* Logo */}
           <div className="flex items-center justify-between p-6 border-b border-white/20">
-            <div className="flex items-center space-x-3">
+            <div 
+              className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => navigate('/')}
+            >
               <R42Logo size="lg" />
               <div>
                 <h1 className="text-lg font-bold text-slate-800">R42 Copilot</h1>
