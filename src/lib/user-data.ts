@@ -230,6 +230,31 @@ export const clearLocalStorageIfNeeded = () => {
   }
 };
 
+// Force clear localStorage completely (for emergency use)
+export const forceClearLocalStorage = () => {
+  try {
+    localStorage.clear();
+    console.log('localStorage completely cleared');
+    return true;
+  } catch (error) {
+    console.error('Failed to clear localStorage:', error);
+    return false;
+  }
+};
+
+// Check if localStorage is available and working
+export const isLocalStorageAvailable = () => {
+  try {
+    const testKey = '__test__';
+    localStorage.setItem(testKey, 'test');
+    localStorage.removeItem(testKey);
+    return true;
+  } catch (error) {
+    console.error('localStorage not available:', error);
+    return false;
+  }
+};
+
 export const addUploadedPDF = (pdfData: {
   id: string;
   filename: string;

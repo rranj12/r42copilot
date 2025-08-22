@@ -14,7 +14,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import R42Logo from "@/components/ui/r42-logo";
-import { getUserName, getUserData, getPDFsByPlatform, clearLocalStorageIfNeeded } from "@/lib/user-data";
+import { getUserName, getUserData, getPDFsByPlatform, clearLocalStorageIfNeeded, isLocalStorageAvailable, forceClearLocalStorage } from "@/lib/user-data";
 
 import { useNavigate } from "react-router-dom";
 
@@ -177,6 +177,20 @@ const NeuroAge = () => {
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Try Again
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  if (isLocalStorageAvailable()) {
+                    forceClearLocalStorage();
+                    setErrorMessage('localStorage cleared. Please refresh the page.');
+                  } else {
+                    setErrorMessage('localStorage not available. Please check your browser settings.');
+                  }
+                }}
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                Clear Storage
               </Button>
               <Button 
                 variant="outline"
