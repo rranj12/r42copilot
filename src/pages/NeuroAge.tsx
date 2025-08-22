@@ -415,23 +415,20 @@ const NeuroAge = () => {
         </Card>
       )}
 
-      {/* Overall Score Distribution */}
+      {/* Overall Score Summary */}
       <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Overall Score Distribution</h3>
-        <div className="h-64 flex justify-center">
-          <div className="w-48 h-48">
-            <Doughnut 
-              data={getOverallScoreData(neuroAgeData)}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: 'bottom' as const,
-                  },
-                },
-              }}
-            />
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">Overall Score Summary</h3>
+        <div className="text-center space-y-4">
+          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto">
+            <div className="text-white text-center">
+              <div className="text-3xl font-bold">
+                {neuroAgeInsights?.overallScore || 'N/A'}
+              </div>
+              <div className="text-sm opacity-90">Score</div>
+            </div>
+          </div>
+          <div className="text-sm text-slate-600">
+            Based on your NeuroAge analysis results
           </div>
         </div>
       </Card>
