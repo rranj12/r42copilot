@@ -422,60 +422,71 @@ const NeuroAge = () => {
           <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto">
             <div className="text-white text-center">
               <div className="text-3xl font-bold">
-                {neuroAgeInsights?.overallScore || 'N/A'}
+                {neuroAgeInsights?.keyMetrics?.[0]?.value || 
+                 neuroAgeInsights?.summary?.substring(0, 20) + '...' || 
+                 'N/A'}
               </div>
-              <div className="text-sm opacity-90">Score</div>
+              <div className="text-sm opacity-90">
+                {neuroAgeInsights?.keyMetrics?.[0]?.name || 'Score'}
+              </div>
             </div>
           </div>
           <div className="text-sm text-slate-600">
             Based on your NeuroAge analysis results
           </div>
+          {/* Debug info - remove this later */}
+          <details className="text-xs text-slate-500">
+            <summary>Debug: Available Data</summary>
+            <pre className="mt-2 text-left bg-slate-100 p-2 rounded overflow-auto max-h-32">
+              {JSON.stringify(neuroAgeInsights, null, 2)}
+            </pre>
+          </details>
         </div>
       </Card>
 
       {/* Key Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Cognitive Insights</h3>
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">Key Metrics from Report</h3>
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Memory Performance</span>
-              <Badge className="bg-green-100 text-green-800 border-green-200">Excellent</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Processing Speed</span>
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200">Good</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Attention Span</span>
-              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Moderate</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Executive Function</span>
-              <Badge className="bg-green-100 text-green-800 border-green-200">Excellent</Badge>
-            </div>
+            {neuroAgeInsights?.keyMetrics && neuroAgeInsights.keyMetrics.length > 0 ? (
+              neuroAgeInsights.keyMetrics.slice(0, 4).map((metric, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">{metric.name}</span>
+                  <Badge 
+                    className={`${
+                      metric.status === 'normal' ? 'bg-green-100 text-green-800 border-green-200' :
+                      metric.status === 'elevated' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                      metric.status === 'low' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                      'bg-red-100 text-red-800 border-red-200'
+                    }`}
+                  >
+                    {metric.value}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-slate-500 py-4">
+                <p>No specific metrics found in the report</p>
+                <p className="text-xs">Upload a detailed NeuroAge report for metrics</p>
+              </div>
+            )}
           </div>
         </Card>
 
         <Card className="p-6 bg-white/40 backdrop-blur-sm border-white/30">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Brain Health Markers</h3>
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">AI Analysis Summary</h3>
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Neural Efficiency</span>
-              <Badge className="bg-green-100 text-green-800 border-green-200">Optimal</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Cognitive Flexibility</span>
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200">Good</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Reaction Time</span>
-              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Moderate</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Pattern Recognition</span>
-              <Badge className="bg-green-100 text-green-800 border-green-200">Excellent</Badge>
-            </div>
+            {neuroAgeInsights?.summary ? (
+              <div className="text-sm text-slate-600 leading-relaxed">
+                {neuroAgeInsights.summary}
+              </div>
+            ) : (
+              <div className="text-center text-slate-500 py-4">
+                <p>No analysis summary available</p>
+                <p className="text-xs">Report analysis may be in progress</p>
+              </div>
+            )}
           </div>
         </Card>
       </div>
@@ -484,27 +495,22 @@ const NeuroAge = () => {
       <Card className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
         <h3 className="text-lg font-semibold text-slate-800 mb-4">AI-Generated Recommendations</h3>
         <div className="space-y-4">
-          <div className="flex items-start space-x-3">
-            <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
-            <div>
-              <h4 className="font-medium text-slate-800">Cognitive Enhancement</h4>
-              <p className="text-sm text-slate-600">Your attention span shows room for improvement. Consider adding Lion's Mane extract and optimizing sleep hygiene.</p>
+          {neuroAgeInsights?.recommendations && neuroAgeInsights.recommendations.length > 0 ? (
+            neuroAgeInsights.recommendations.map((recommendation, index) => (
+              <div key={index} className="flex items-start space-x-3">
+                <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
+                <div>
+                  <h4 className="font-medium text-slate-800">Recommendation {index + 1}</h4>
+                  <p className="text-sm text-slate-600">{recommendation}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-slate-500 py-4">
+              <p>No specific recommendations available</p>
+              <p className="text-xs">Upload a detailed NeuroAge report for personalized recommendations</p>
             </div>
-          </div>
-          <div className="flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 mt-1" />
-            <div>
-              <h4 className="font-medium text-slate-800">Reaction Time Optimization</h4>
-              <p className="text-sm text-slate-600">Moderate reaction time suggests cognitive training could be beneficial. Consider brain training exercises and meditation.</p>
-            </div>
-          </div>
-          <div className="flex items-start space-x-3">
-            <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
-            <div>
-              <h4 className="font-medium text-slate-800">Memory Maintenance</h4>
-              <p className="text-sm text-slate-600">Excellent memory performance. Maintain current cognitive protocols and consider advanced memory techniques.</p>
-            </div>
-          </div>
+          )}
         </div>
       </Card>
     </div>
