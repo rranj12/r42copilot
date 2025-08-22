@@ -360,34 +360,34 @@ const Retreat = () => {
 
             <TabsContent value="agenda" className="space-y-8">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-slate-800 mb-4">Agenda & Speaker Profiles</h2>
-                <p className="text-slate-600">World-renowned experts in longevity science and wellness</p>
+                <h2 className="text-3xl font-bold text-slate-800 mb-4">Retreat Experience & Activities</h2>
+                <p className="text-slate-600">Immersive longevity science and wellness practices at the Ritz-Carlton, Half Moon Bay</p>
               </div>
 
-              {/* Day 1 - Epigenetics & Nutrition */}
+              {/* Day 1 - Arrival & Restoration */}
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">Day 1: Epigenetics & Stealth Nutrition</h3>
+                <h3 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">Day 1: Arrival & Restoration</h3>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card className="bg-white/40 backdrop-blur-sm border-white/30">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-blue-600" />
-                        <span>Dr. Christopher Gardner</span>
+                        <BookOpen className="w-5 h-5 text-blue-600" />
+                        <span>Science of Aging Gracefully</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <p className="text-sm text-slate-600">
-                          World-renowned epigenetics expert - "Diet over DNA". Lead at DIETFITS study, Professor at Stanford University for Nutritional Genomics and Epigenetics.
+                          Deep dive into cellular damage, mitochondria, and hallmarks of aging. Learn the latest research on how to age gracefully and maintain vitality.
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">Epigenetics</Badge>
-                          <Badge className="bg-green-100 text-green-800 border-green-200">Nutrition</Badge>
-                          <Badge variant="outline">Stanford</Badge>
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">Cellular Biology</Badge>
+                          <Badge className="bg-green-100 text-green-800 border-green-200">Mitochondria</Badge>
+                          <Badge variant="outline">Aging Science</Badge>
                         </div>
                         <div className="text-sm text-slate-600">
-                          <strong>Panel Topic:</strong> Weight loss diet study-DIETFITS (Diet Intervention Examining the factors interacting with treatment success)
+                          <strong>Time:</strong> 3:30 PM - 4:30 PM
                         </div>
                       </div>
                     </CardContent>
@@ -396,45 +396,51 @@ const Retreat = () => {
                   <Card className="bg-white/40 backdrop-blur-sm border-white/30">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-blue-600" />
-                        <span>Dr. Lucia Aronica</span>
+                        <Activity className="w-5 h-5 text-green-600" />
+                        <span>Biomarker Assessments</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <p className="text-sm text-slate-600">
-                          Professor at Stanford University for Nutritional Genomics and Epigenetics; Sports medicine expert.
+                          Comprehensive health evaluation including DEXA scan, HRV monitoring, glucose testing, and optional biological age assessment.
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">Epigenetics</Badge>
-                          <Badge className="bg-green-100 text-green-800 border-green-200">Sports Medicine</Badge>
-                          <Badge variant="outline">Stanford</Badge>
+                          <Badge className="bg-green-100 text-green-800 border-green-200">DEXA Scan</Badge>
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">HRV</Badge>
+                          <Badge variant="outline">Glucose Testing</Badge>
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          <strong>Time:</strong> 2:00 PM - 3:00 PM
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Day 2 - Lifestyle Medicine */}
-                <h3 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2 mt-8">Day 2: Lifestyle Medicine & Supplements</h3>
+                {/* Day 2 - Activation & Exploration */}
+                <h3 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2 mt-8">Day 2: Activation & Exploration</h3>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card className="bg-white/40 backdrop-blur-sm border-white/30">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-purple-600" />
-                        <span>Dr. Rachele Pojednic</span>
+                        <BookOpen className="w-5 h-5 text-purple-600" />
+                        <span>Hormetic Stress & Longevity</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <p className="text-sm text-slate-600">
-                          PhD, Stanford lecturer, Nutrition Expert, Supplement researcher.
+                          Learn how biological stressors like heat, cold, and exercise promote resilience and longevity. Discover the science behind hormesis.
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200">Lifestyle Medicine</Badge>
-                          <Badge className="bg-orange-100 text-orange-800 border-orange-200">Supplements</Badge>
-                          <Badge variant="outline">Stanford</Badge>
+                          <Badge className="bg-purple-100 text-purple-800 border-purple-200">Hormesis</Badge>
+                          <Badge className="bg-orange-100 text-orange-800 border-orange-200">Stress Response</Badge>
+                          <Badge variant="outline">Longevity</Badge>
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          <strong>Time:</strong> 9:30 AM - 10:30 AM
                         </div>
                       </div>
                     </CardContent>
@@ -443,45 +449,51 @@ const Retreat = () => {
                   <Card className="bg-white/40 backdrop-blur-sm border-white/30">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-purple-600" />
-                        <span>Dr. Marily Opezzo</span>
+                        <Activity className="w-5 h-5 text-purple-600" />
+                        <span>Tech & Therapies Sampler</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <p className="text-sm text-slate-600">
-                          PhD, Nutrition Pillar Lead Stanford.
+                          Experience cutting-edge longevity technologies including NAD+ IV therapy, peptide overview, and optional hyperbaric oxygen therapy.
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200">Lifestyle Medicine</Badge>
-                          <Badge className="bg-orange-100 text-orange-800 border-orange-200">Nutrition</Badge>
-                          <Badge variant="outline">Stanford</Badge>
+                          <Badge className="bg-purple-100 text-purple-800 border-purple-200">NAD+ IV</Badge>
+                          <Badge className="bg-orange-100 text-orange-800 border-orange-200">Peptides</Badge>
+                          <Badge variant="outline">Hyperbaric</Badge>
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          <strong>Time:</strong> 11:00 AM - 12:00 PM
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Day 3 - Aging & Longevity */}
-                <h3 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2 mt-8">Day 3: Aging Mechanisms & Longevity</h3>
+                {/* Day 3 - Integration & Departure */}
+                <h3 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2 mt-8">Day 3: Integration & Departure</h3>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card className="bg-white/40 backdrop-blur-sm border-white/30">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-green-600" />
-                        <span>Dr. Anne Brunet</span>
+                        <BookOpen className="w-5 h-5 text-green-600" />
+                        <span>Gut-Brain Axis & Microbiome</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <p className="text-sm text-slate-600">
-                          Michele & Timothy Barakett Endowed Professor, co-Director of Paul F. Glenn Laboratories for the Biology of Aging.
+                          Comprehensive discussion on microbiome longevity, gut-brain connection, and interpreting your test results for optimal health.
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-green-100 text-green-800 border-green-200">Aging Mechanisms</Badge>
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">Genetics</Badge>
-                          <Badge variant="outline">Stanford</Badge>
+                          <Badge className="bg-green-100 text-green-800 border-green-200">Microbiome</Badge>
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">Gut-Brain Axis</Badge>
+                          <Badge variant="outline">Metabolic Health</Badge>
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          <strong>Time:</strong> 9:30 AM - 10:30 AM
                         </div>
                       </div>
                     </CardContent>
@@ -490,102 +502,27 @@ const Retreat = () => {
                   <Card className="bg-white/40 backdrop-blur-sm border-white/30">
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-green-600" />
-                        <span>Dr. Laura Carstensen</span>
+                        <Heart className="w-5 h-5 text-green-600" />
+                        <span>Longevity Blueprint Workshop</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <p className="text-sm text-slate-600">
-                          Fairleigh S. Dickinson Jr. Professor in Public Policy & Psychology, founding Director of the Stanford Center on Longevity.
+                          Build your personalized longevity protocol and connect with accountability partners for continued success after the retreat.
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-green-100 text-green-800 border-green-200">Socioemotional Aging</Badge>
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200">Well-being</Badge>
-                          <Badge variant="outline">Stanford</Badge>
+                          <Badge className="bg-green-100 text-green-800 border-green-200">Personalized</Badge>
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">Protocol</Badge>
+                          <Badge variant="outline">Accountability</Badge>
                         </div>
                         <div className="text-sm text-slate-600">
-                          <strong>Famous Quote:</strong> "Older people are happier" - TED Talk 2011
+                          <strong>Time:</strong> 8:00 PM (Day 2)
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
-
-                {/* Day 4 - High Profile Speakers */}
-                <h3 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2 mt-8">Day 4: High Profile Longevity Leaders</h3>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card className="bg-white/40 backdrop-blur-sm border-white/30">
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-red-600" />
-                        <span>Dr. David Sinclair</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <p className="text-sm text-slate-600">
-                          Harvard geneticist and entrepreneur focused on reversing aging.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-red-100 text-red-800 border-red-200">High Profile</Badge>
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">Genetics</Badge>
-                          <Badge variant="outline">Harvard</Badge>
-                        </div>
-                        <div className="text-sm text-slate-600">
-                          <strong>Panel Topic:</strong> Can We Reverse Aging?
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white/40 backdrop-blur-sm border-white/30">
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-red-600" />
-                        <span>Dan Buettner</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <p className="text-sm text-slate-600">
-                          Speaker at TEDxTC in 2009: "How to live to be 100+", known for Blue Zones and longevity lifestyle research.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-red-100 text-red-800 border-red-200">High Profile</Badge>
-                          <Badge className="bg-green-100 text-green-800 border-green-200">Blue Zones</Badge>
-                          <Badge variant="outline">Stanford-ish</Badge>
-                        </div>
-                        <div className="text-sm text-slate-600">
-                          <strong>Panel Topic:</strong> Blue Zones and How to Live 100+
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Day 5 - Specialized Topics */}
-                <h3 className="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2 mt-8">Day 5: Specialized Longevity Topics</h3>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card className="bg-white/40 backdrop-blur-sm border-white/30">
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Users className="w-5 h-5 text-indigo-600" />
-                        <span>Dr. Peter Attia</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <p className="text-sm text-slate-600">
-                          Physician and longevity expert promoting the 'Centenarian Decathlon' approach to aging.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">Fitness Philosophy</Badge>
-                          <Badge className="bg-orange-100 text-orange-800 border-orange-200">Longevity Expert</Badge>
-                        </div>
-                        <div className="text-sm text-slate-600">
                           <strong>Panel Topic:</strong> Functional Longevity Training
                         </div>
                       </div>
