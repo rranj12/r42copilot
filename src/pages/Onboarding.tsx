@@ -11,7 +11,7 @@ import { Upload, ArrowRight, ArrowLeft, Check, Apple } from "lucide-react";
 import R42Logo from "@/components/ui/r42-logo";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { setUserData, addUploadedPDF } from "@/lib/user-data";
+import { setUserData, addUploadedPDF, parseHeight, formatHeight } from "@/lib/user-data";
 import { generateNeuroAgeData, generateIolloData } from "@/lib/data-visualization";
 import { extractTextFromPDF } from "@/lib/openai-service";
 
@@ -366,14 +366,39 @@ const Onboarding = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="height">Height (inches)</Label>
-                  <Input
-                    id="height"
-                    type="number"
-                    value={formData.height}
-                    onChange={(e) => updateFormData("height", e.target.value)}
-                    className="bg-white/50 border-white/30"
-                  />
+                  <Label htmlFor="height">Height</Label>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      id="heightFeet"
+                      type="number"
+                      min="0"
+                      max="8"
+                      value={Math.floor(parseHeight(formData.height) / 12) || ''}
+                      onChange={(e) => {
+                        const feet = parseInt(e.target.value) || 0;
+                        const inches = parseHeight(formData.height) % 12;
+                        updateFormData("height", feet * 12 + inches);
+                      }}
+                      placeholder="Feet"
+                      className="bg-white/50 border-white/30 w-20"
+                    />
+                    <span className="text-slate-600 text-sm">ft</span>
+                    <Input
+                      id="heightInches"
+                      type="number"
+                      min="0"
+                      max="11"
+                      value={parseHeight(formData.height) % 12 || ''}
+                      onChange={(e) => {
+                        const feet = Math.floor(parseHeight(formData.height) / 12);
+                        const inches = parseInt(e.target.value) || 0;
+                        updateFormData("height", feet * 12 + inches);
+                      }}
+                      placeholder="Inches"
+                      className="bg-white/50 border-white/30 w-20"
+                    />
+                    <span className="text-slate-600 text-sm">in</span>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="weight">Weight (lbs)</Label>

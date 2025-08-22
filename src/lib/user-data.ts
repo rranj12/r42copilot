@@ -5,7 +5,7 @@ interface UserData {
   email: string;
   age: string;
   sex: string;
-  height: string;
+  height: string | number; // Can be inches (number) or feet'inches format (string)
   weight: string;
   healthGoals: string;
   currentSupplements: string;
@@ -186,6 +186,40 @@ export const updatePDFInsights = (pdfId: string, insights: any) => {
 export const clearUserData = () => {
   userData = null;
   localStorage.removeItem('r42-user-data');
+};
+
+// Helper functions for height conversion
+export const formatHeight = (heightInches: number | string): string => {
+  if (typeof heightInches === 'string') {
+    // If it's already a formatted string, return as is
+    if (heightInches.includes("'") || heightInches.includes('ft')) {
+      return heightInches;
+    }
+    // Try to parse as number
+    heightInches = parseInt(heightInches) || 0;
+  }
+  
+  if (typeof heightInches === 'number' && heightInches > 0) {
+    const feet = Math.floor(heightInches / 12);
+    const inches = heightInches % 12;
+    return `${feet}'${inches}"`;
+  }
+  
+  return '';
+};
+
+export const parseHeight = (heightString: string): number => {
+  // Handle feet'inches format (e.g., "5'11"")
+  const match = heightString.match(/(\d+)'(\d+)"/);
+  if (match) {
+    const feet = parseInt(match[1]);
+    const inches = parseInt(match[2]);
+    return feet * 12 + inches;
+  }
+  
+  // Handle just inches
+  const inches = parseInt(heightString);
+  return isNaN(inches) ? 0 : inches;
 };
 
 export const clearStorageIfNeeded = () => {
