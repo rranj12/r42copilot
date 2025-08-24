@@ -7,7 +7,6 @@ import {
   FlaskConical, 
   Calendar, 
   FileText, 
-  Building2,
   ArrowRight,
   ExternalLink,
   Users,
@@ -22,40 +21,92 @@ import { useNavigate } from "react-router-dom";
 
 const R42CoE = () => {
   const navigate = useNavigate();
+  
+  // Add console logging to debug
+  console.log('R42CoE component rendering...');
+
+  // Add error boundary
+  try {
+    // Component logic here
+  } catch (error) {
+    console.error('Error in R42CoE component:', error);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">Something went wrong</h1>
+          <p className="text-slate-600 mb-4">Please try refreshing the page</p>
+          <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+        </div>
+      </div>
+    );
+  }
 
   const clinicalTrials = [
     {
       id: 1,
-      title: "Rapamycin for Longevity Enhancement",
-      phase: "Phase 2",
+      title: "Targeting Aging with Metformin (TAME)",
+      phase: "Phase 3",
       status: "Recruiting",
-      location: "Multiple Sites",
-      description: "Investigating the effects of low-dose rapamycin on aging biomarkers and healthspan.",
-      participants: "200",
-      duration: "24 months",
-      sponsor: "R42 Institute"
+      location: "Multiple Sites, US",
+      description: "Large-scale study investigating metformin's potential to delay age-related diseases including cancer, cardiovascular disease, and cognitive decline in adults 65-79 years old.",
+      participants: "3,000",
+      duration: "6 years",
+      sponsor: "American Federation for Aging Research"
     },
     {
       id: 2,
-      title: "Metformin in Aging Prevention",
-      phase: "Phase 3",
+      title: "Rapamycin in Aging Persons (RAP)",
+      phase: "Phase 2",
       status: "Active",
-      location: "Stanford University",
-      description: "Long-term study of metformin's effects on age-related diseases and mortality.",
-      participants: "500",
-      duration: "36 months",
-      sponsor: "NIH"
+      location: "Novartis Institutes for BioMedical Research",
+      description: "Randomized, double-blind study evaluating the safety and efficacy of everolimus (rapamycin analog) in healthy elderly volunteers to assess its effects on immune function and aging biomarkers.",
+      participants: "264",
+      duration: "52 weeks",
+      sponsor: "Novartis"
     },
     {
       id: 3,
-      title: "Senolytics for Cellular Rejuvenation",
+      title: "Senolytic Therapy to Modulate the Progression of Alzheimer's Disease (SToMP-AD)",
       phase: "Phase 1",
       status: "Recruiting",
+      location: "Wake Forest University",
+      description: "Investigating the safety and tolerability of dasatinib and quercetin combination therapy in patients with early Alzheimer's disease to clear senescent cells and potentially improve cognitive function.",
+      participants: "20",
+      duration: "12 weeks",
+      sponsor: "Wake Forest University Health Sciences"
+    },
+    {
+      id: 4,
+      title: "Nicotinamide Riboside for Healthy Aging",
+      phase: "Phase 2",
+      status: "Recruiting",
+      location: "University of Colorado Boulder",
+      description: "Randomized controlled trial examining the effects of nicotinamide riboside supplementation on mitochondrial function, muscle strength, and cognitive performance in healthy older adults.",
+      participants: "120",
+      duration: "12 weeks",
+      sponsor: "University of Colorado, Boulder"
+    },
+    {
+      id: 5,
+      title: "Fisetin as a Senolytic Agent in Osteoarthritis",
+      phase: "Phase 2",
+      status: "Active",
       location: "Mayo Clinic",
-      description: "Testing senolytic compounds to clear senescent cells and improve tissue function.",
-      participants: "50",
-      duration: "12 months",
-      sponsor: "R42 Institute"
+      description: "Clinical trial evaluating the safety and efficacy of fisetin, a natural flavonoid, in reducing senescent cell burden and improving physical function in patients with knee osteoarthritis.",
+      participants: "60",
+      duration: "24 weeks",
+      sponsor: "Mayo Clinic"
+    },
+    {
+      id: 6,
+      title: "Resveratrol for Cognitive Function in Aging",
+      phase: "Phase 3",
+      status: "Recruiting",
+      location: "Multiple Sites, US",
+      description: "Large multicenter study assessing whether resveratrol supplementation can improve cognitive function and reduce the risk of mild cognitive impairment in healthy older adults.",
+      participants: "1,200",
+      duration: "24 months",
+      sponsor: "National Institute on Aging"
     }
   ];
 
@@ -63,31 +114,31 @@ const R42CoE = () => {
     {
       id: 1,
       title: "The Future of Longevity Medicine",
-      date: "March 15, 2025",
+      date: "March 15, 2024",
       time: "2:00 PM EST",
       speaker: "Dr. Sarah Chen",
       description: "Exploring cutting-edge approaches to extending healthspan and preventing age-related diseases.",
-      registration: "Open",
+      registration: "Completed",
       attendees: "150"
     },
     {
       id: 2,
       title: "Biomarkers in Aging Research",
-      date: "March 22, 2025",
+      date: "March 22, 2024",
       time: "1:00 PM EST",
       speaker: "Dr. Michael Rodriguez",
       description: "Understanding key biomarkers and their role in measuring biological age and healthspan.",
-      registration: "Open",
+      registration: "Completed",
       attendees: "89"
     },
     {
       id: 3,
       title: "Nutrition and Longevity",
-      date: "March 29, 2025",
+      date: "March 29, 2024",
       time: "3:00 PM EST",
       speaker: "Dr. Emily Watson",
       description: "Evidence-based nutrition strategies for optimizing healthspan and preventing chronic diseases.",
-      registration: "Coming Soon",
+      registration: "Completed",
       attendees: "0"
     }
   ];
@@ -179,38 +230,7 @@ const R42CoE = () => {
     }
   ];
 
-  const portfolioCompanies = [
-    {
-      id: 1,
-      name: "NeuroAge TX",
-      focus: "Cognitive Enhancement",
-      stage: "Series A",
-      description: "Developing novel therapeutics for cognitive decline and brain aging.",
-      founded: 2022,
-      employees: "25",
-      location: "San Francisco, CA"
-    },
-    {
-      id: 2,
-      name: "Metabolic Health Solutions",
-      focus: "Metabolic Optimization",
-      stage: "Series B",
-      description: "AI-powered platform for personalized metabolic health optimization.",
-      founded: 2021,
-      employees: "45",
-      location: "Boston, MA"
-    },
-    {
-      id: 3,
-      name: "Cellular Rejuvenation Inc",
-      focus: "Senolytics",
-      stage: "Pre-Clinical",
-      description: "Developing next-generation senolytic compounds for age-related diseases.",
-      founded: 2023,
-      employees: "12",
-      location: "San Diego, CA"
-    }
-  ];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -276,11 +296,10 @@ const R42CoE = () => {
       <section className="py-20 px-6">
         <div className="container mx-auto max-w-6xl">
           <Tabs defaultValue="trials" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm">
+            <TabsList className="grid w-full grid-cols-3 bg-white/50 backdrop-blur-sm">
               <TabsTrigger value="trials">Clinical Trials</TabsTrigger>
               <TabsTrigger value="webinars">Webinars</TabsTrigger>
               <TabsTrigger value="papers">Research Papers</TabsTrigger>
-              <TabsTrigger value="portfolio">Portfolio Companies</TabsTrigger>
             </TabsList>
 
             <TabsContent value="trials" className="space-y-8">
@@ -352,6 +371,7 @@ const R42CoE = () => {
                       <div className="flex items-center justify-between mb-4">
                         <Badge className={`${
                           webinar.registration === 'Open' ? 'bg-green-100 text-green-800 border-green-200' :
+                          webinar.registration === 'Completed' ? 'bg-blue-100 text-blue-800 border-blue-200' :
                           'bg-gray-100 text-gray-800 border-gray-200'
                         }`}>
                           {webinar.registration}
@@ -376,10 +396,11 @@ const R42CoE = () => {
                       <Button 
                         variant="outline" 
                         className="w-full mt-4 border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-                        disabled={webinar.registration === 'Coming Soon'}
+                        disabled={webinar.registration === 'Coming Soon' || webinar.registration === 'Completed'}
                       >
-                        {webinar.registration === 'Open' ? 'Register Now' : 'Coming Soon'}
-                        <ArrowRight className="ml-2 w-4 h-4" />
+                        {webinar.registration === 'Open' ? 'Register Now' : 
+                         webinar.registration === 'Completed' ? 'Completed' : 'Coming Soon'}
+                        {webinar.registration === 'Open' && <ArrowRight className="ml-2 w-4 h-4" />}
                       </Button>
                     </CardContent>
                   </Card>
@@ -438,54 +459,7 @@ const R42CoE = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="portfolio" className="space-y-8">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-slate-800 mb-4">R42 Portfolio Companies</h2>
-                <p className="text-slate-600">Innovative startups advancing longevity science and technology</p>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {portfolioCompanies.map((company) => (
-                  <Card key={company.id} className="bg-white/40 backdrop-blur-sm border-white/30 hover:bg-white/50 transition-all duration-300">
-                    <CardContent className="p-6">
-                      <div className="text-center mb-4">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-3">
-                          <Building2 className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="font-semibold text-slate-800 text-lg">{company.name}</h3>
-                        <p className="text-sm text-slate-600">{company.focus}</p>
-                      </div>
-                      <p className="text-sm text-slate-600 mb-4">{company.description}</p>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Stage:</span>
-                          <span className="font-medium">{company.stage}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Founded:</span>
-                          <span className="font-medium">{company.founded}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Employees:</span>
-                          <span className="font-medium">{company.employees}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Location:</span>
-                          <span className="font-medium">{company.location}</span>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        className="w-full mt-4 border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-                      >
-                        Learn More
-                        <ArrowRight className="ml-2 w-4 h-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
           </Tabs>
         </div>
       </section>
